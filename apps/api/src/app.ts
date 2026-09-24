@@ -21,6 +21,7 @@ import { leadRouter } from './modules/crm/routes/lead.routes.js';
 import { opportunityRouter } from './modules/crm/routes/opportunity.routes.js';
 import { contactActivityRouter } from './modules/crm/routes/contact-activity.routes.js';
 import { shipmentRouter } from './modules/logistics/routes/shipment.routes.js';
+import { warehouseRouter } from './modules/warehouses/routes/warehouse.routes.js';
 import { errorHandler, notFoundHandler } from './shared/http.js';
 import { requestIdMiddleware } from './shared/request-id.js';
 
@@ -51,5 +52,6 @@ app.use(`${env.API_PREFIX}/crm/leads`, leadRouter);
 app.use(`${env.API_PREFIX}/crm/opportunities`, opportunityRouter);
 app.use(`${env.API_PREFIX}/crm`, contactActivityRouter);
 app.use(`${env.API_PREFIX}/shipments`, shipmentRouter);
+app.use(`${env.API_PREFIX}/warehouses`, warehouseRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);

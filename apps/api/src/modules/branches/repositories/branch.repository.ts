@@ -4,6 +4,9 @@ import type { BranchQuery, CreateBranchInput } from '../validators/branch.schema
 export const createBranch = (organizationId: string, input: CreateBranchInput): Promise<Branch> =>
   BranchModel.create({ organizationId, ...input });
 
+export const findActiveBranch = (organizationId: string, branchId: string): Promise<Branch | null> =>
+  BranchModel.findOne({ _id: branchId, organizationId, active: true }).exec();
+
 export const listBranches = async (organizationId: string, query: BranchQuery): Promise<{ items: Branch[]; total: number }> => {
   const filter = { organizationId, active: true };
   const [items, total] = await Promise.all([

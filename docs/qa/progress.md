@@ -16,6 +16,7 @@
 - Customers, suppliers, products e inventario con movimientos.
 - Purchase requests, purchase orders y sales orders.
 - Recepciones parciales de órdenes de compra con actualización transaccional de inventario, movimientos y auditoría.
+- Gestión tenant-scoped de almacenes, con paginación y asociación validada a sucursales.
 - Facturas, pagos y asientos balanceados como modelos base.
 - Workflows configurables y ejecuciones iniciales.
 - Branches tenant-scoped, request IDs, readiness y servicio de auditoria sanitizada.
@@ -27,14 +28,14 @@
 ## Validacion mas reciente
 
 - Typecheck de API, web, mobile y paquetes compartidos: PASS.
-- Tests backend: PASS (19 suites, 30 tests).
+- Tests backend: PASS (20 suites, 33 tests).
 - Build API y web: PASS.
 - Riesgo pendiente: vulnerabilidades transitivas del tooling Expo/Metro documentadas en `docs/frontend.md`.
 
 ## Pendiente
 
-- Publicar `main` en GitHub: el commit local existe, pero el cliente Git no tiene credenciales de shell configuradas.
+- Commit inicial y cambios publicados en `origin/main`.
 - Completar reglas de negocio de compras, ventas, facturacion y contabilidad.
-- Reservas, envios y cuentas por cobrar/pagar.
+- Reservas, envíos y cuentas por cobrar/pagar.
 - Frontend conectado a APIs reales con loading/error/empty states.
 - E2E, rate limiting, password recovery, MFA, OpenAPI, reportes, integraciones, manufactura y QA final.

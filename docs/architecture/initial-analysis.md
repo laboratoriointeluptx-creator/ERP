@@ -6,7 +6,7 @@ El workspace local esta asociado al repositorio `https://github.com/laboratorioi
 
 ## Estado actual
 
-El workspace estaba vacio al iniciar la fase 0. Desde entonces se construyo un monorepo TypeScript con API Express/Mongoose, clientes web y mobile, pruebas y CI. El commit inicial existe localmente; la publicación a GitHub queda pendiente de credenciales para Git en este entorno.
+El workspace estaba vacio al iniciar la fase 0. Desde entonces se construyo un monorepo TypeScript con API Express/Mongoose, clientes web y mobile, pruebas y CI. El commit inicial y los primeros módulos están publicados en `main` en GitHub.
 
 ## Arquitectura encontrada
 
@@ -38,4 +38,4 @@ La primera entrega usa Node.js, Express, TypeScript, Zod, Helmet, CORS, dotenv, 
 
 ## Siguiente fase
 
-Completar reglas de negocio y pruebas de integración para los flujos de compras, ventas e inventario; conectar el frontend a las APIs y publicar el commit inicial cuando Git disponga de credenciales.
+Completar pruebas de integración para los flujos de compras e inventario; continuar ventas, finanzas y conectar el frontend a las APIs.
