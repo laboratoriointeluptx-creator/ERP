@@ -17,6 +17,7 @@ export const permissions = {
   purchaseOrdersCreate: 'purchase-orders.create',
   purchaseOrdersReceive: 'purchase-orders.receive',
   salesOrdersCreate: 'sales-orders.create',
+  salesOrdersConfirm: 'sales-orders.confirm',
   invoicesRead: 'invoices.read',
   invoicesCreate: 'invoices.create',
   paymentsRead: 'payments.read',

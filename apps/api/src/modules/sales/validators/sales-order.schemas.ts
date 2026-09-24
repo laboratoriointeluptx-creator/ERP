@@ -9,6 +9,15 @@ export const createSalesOrderSchema = z.object({
   lines: z.array(z.object({ productId: objectId, quantity: decimal, unitPrice: decimal }).strict()).min(1),
   currency: z.string().trim().length(3).toUpperCase().default('MXN'),
   notes: z.string().trim().max(2000).optional(),
-}).strict();
+}).strict().superRefine((value, context) => {
+  const productIds = value.lines.map((line) => line.productId);
+  if (new Set(productIds).size !== productIds.length) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['lines'], message: 'A product can appear only once per sales order' });
+  }
+});
+
+export const salesOrderParamsSchema = z.object({ id: objectId });
+export const confirmSalesOrderSchema = z.object({ warehouseId: objectId }).strict();
 
 export type CreateSalesOrderInput = z.infer<typeof createSalesOrderSchema>;
+export type ConfirmSalesOrderInput = z.infer<typeof confirmSalesOrderSchema>;
