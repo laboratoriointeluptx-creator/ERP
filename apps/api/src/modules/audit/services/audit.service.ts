@@ -1,4 +1,4 @@
-import type { Types } from 'mongoose';
+import type { ClientSession, Types } from 'mongoose';
 import { AuditLogModel } from '../models/audit-log.model.js';
 
 export interface AuditEvent {
@@ -13,12 +13,12 @@ export interface AuditEvent {
   after?: Record<string, unknown>;
 }
 
-export const recordAuditEvent = (event: AuditEvent): Promise<unknown> =>
-  AuditLogModel.create({
+export const recordAuditEvent = (event: AuditEvent, session?: ClientSession): Promise<unknown> =>
+  AuditLogModel.create([{
     ...event,
     before: sanitize(event.before),
     after: sanitize(event.after),
-  });
+  }], session ? { session } : {});
 
 const sanitize = (value: Record<string, unknown> | undefined): Record<string, unknown> | undefined => {
   if (!value) return undefined;

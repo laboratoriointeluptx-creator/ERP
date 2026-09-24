@@ -12,6 +12,7 @@ export const permissions = {
   purchaseRequestsRead: 'purchase-requests.read',
   purchaseRequestsCreate: 'purchase-requests.create',
   purchaseOrdersCreate: 'purchase-orders.create',
+  purchaseOrdersReceive: 'purchase-orders.receive',
   salesOrdersCreate: 'sales-orders.create',
   invoicesRead: 'invoices.read',
   invoicesCreate: 'invoices.create',

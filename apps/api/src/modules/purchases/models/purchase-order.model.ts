@@ -4,6 +4,7 @@ const purchaseOrderLineSchema = new Schema(
   {
     productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
     quantity: { type: String, required: true, match: /^\d+(\.\d{1,4})?$/ },
+    receivedQuantity: { type: String, required: true, default: '0', match: /^\d+(\.\d{1,4})?$/ },
     unitPrice: { type: String, required: true, match: /^\d+(\.\d{1,4})?$/ },
   },
   { _id: false },
