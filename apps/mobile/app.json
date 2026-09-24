@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "ERP Universal",
+    "slug": "erp-universal",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "assetBundlePatterns": ["**/*"]
+  }
+}
