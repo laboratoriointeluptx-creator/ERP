@@ -10,4 +10,6 @@ export const createShipmentSchema = z.object({
   shippingAddress: z.string().trim().min(1).max(500),
 }).strict();
 
+export const shipmentParamsSchema = z.object({ id: objectId });
+
 export type CreateShipmentInput = z.infer<typeof createShipmentSchema>;

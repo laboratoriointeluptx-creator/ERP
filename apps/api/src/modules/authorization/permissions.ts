@@ -18,6 +18,7 @@ export const permissions = {
   purchaseOrdersReceive: 'purchase-orders.receive',
   salesOrdersCreate: 'sales-orders.create',
   salesOrdersConfirm: 'sales-orders.confirm',
+  salesOrdersCancel: 'sales-orders.cancel',
   invoicesRead: 'invoices.read',
   invoicesCreate: 'invoices.create',
   paymentsRead: 'payments.read',
@@ -32,6 +33,9 @@ export const permissions = {
   crmRead: 'crm.read',
   crmCreate: 'crm.create',
   shipmentsCreate: 'shipments.create',
+  shipmentsDispatch: 'shipments.dispatch',
+  shipmentsCancel: 'shipments.cancel',
+  shipmentsDeliver: 'shipments.deliver',
 } as const;
 
 export type Permission = (typeof permissions)[keyof typeof permissions];

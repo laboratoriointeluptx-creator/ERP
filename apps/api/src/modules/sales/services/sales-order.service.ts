@@ -35,6 +35,13 @@ export const availableStock = (quantity: string, reservedQuantity: string): stri
   return subtractDecimal(quantity, reservedQuantity);
 };
 
+export const releaseReservation = (reservedQuantity: string, orderQuantity: string): string => {
+  if (isGreaterThan(orderQuantity, reservedQuantity)) {
+    throw new HttpError(409, 'INVENTORY_RESERVATION_INVALID', 'Reserved quantity is lower than the sales order quantity');
+  }
+  return subtractDecimal(reservedQuantity, orderQuantity);
+};
+
 export const confirmSalesOrder = async (
   organizationId: string,
   userId: string,
@@ -90,6 +97,56 @@ export const confirmSalesOrder = async (
         ...(ip ? { ip } : {}),
         before: { status: previousStatus },
         after: { status: order.status, warehouseId: String(warehouse._id) },
+      }, session);
+      result = order;
+    });
+    return result;
+  } finally {
+    await session.endSession();
+  }
+};
+
+export const cancelSalesOrder = async (organizationId: string, userId: string, orderId: string, ip?: string) => {
+  const session = await mongoose.startSession();
+  try {
+    let result: unknown;
+    await session.withTransaction(async () => {
+      const order = await SalesOrderModel.findOne({ _id: orderId, organizationId }).session(session).exec();
+      if (!order) throw new HttpError(404, 'SALES_ORDER_NOT_FOUND', 'Sales order not found');
+      if (order.status !== 'DRAFT' && order.status !== 'CONFIRMED') {
+        throw new HttpError(409, 'SALES_ORDER_NOT_CANCELLABLE', 'Only draft or confirmed sales orders can be cancelled');
+      }
+
+      if (order.status === 'CONFIRMED') {
+        if (!order.warehouseId) throw new HttpError(409, 'SALES_ORDER_WAREHOUSE_MISSING', 'Confirmed sales order has no warehouse');
+        for (const line of order.lines) {
+          const balance = await InventoryModel.findOne({
+            organizationId,
+            warehouseId: order.warehouseId,
+            productId: line.productId,
+          }).session(session).exec();
+          if (!balance) throw new HttpError(409, 'INVENTORY_RESERVATION_INVALID', 'Reserved inventory balance was not found');
+          await InventoryModel.updateOne(
+            { _id: balance._id, organizationId },
+            { $set: { reservedQuantity: releaseReservation(balance.reservedQuantity, line.quantity) } },
+            { runValidators: true, session },
+          ).exec();
+        }
+      }
+
+      const previousStatus = order.status;
+      order.status = 'CANCELLED';
+      await order.save({ session });
+      await recordAuditEvent({
+        organizationId,
+        userId,
+        action: 'sales-order.cancelled',
+        module: 'sales',
+        entity: 'SalesOrder',
+        entityId: String(order._id),
+        ...(ip ? { ip } : {}),
+        before: { status: previousStatus },
+        after: { status: order.status },
       }, session);
       result = order;
     });

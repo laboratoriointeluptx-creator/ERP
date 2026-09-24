@@ -20,6 +20,7 @@
 - Consulta paginada de saldos e historial de movimientos de inventario con filtros tenant-scoped.
 - Envío y aprobación/rechazo auditados de solicitudes de compra; órdenes vinculadas validadas contra solicitudes aprobadas.
 - Creación tenant-scoped de pedidos de venta y confirmación transaccional con reserva de existencias.
+- Cancelación segura de pedidos previos al despacho; creación, cancelación y despacho transaccional de envíos con movimientos de salida.
 - Facturas, pagos y asientos balanceados como modelos base.
 - Workflows configurables y ejecuciones iniciales.
 - Branches tenant-scoped, request IDs, readiness y servicio de auditoria sanitizada.
@@ -31,13 +32,13 @@
 ## Validacion mas reciente
 
 - Typecheck de API, web, mobile y paquetes compartidos: PASS.
-- Tests backend: PASS (20 suites, 41 tests).
+- Tests backend: PASS (20 suites, 45 tests).
 - Build API y web: PASS.
 - Riesgo pendiente: vulnerabilidades transitivas del tooling Expo/Metro documentadas en `docs/frontend.md`.
 
 ## Pendiente
 
 - Completar reglas de negocio de compras, ventas, facturacion y contabilidad.
-- Liberar reservas en cancelación/despacho, envíos y cuentas por cobrar/pagar.
+- Cuentas por cobrar/pagar, facturación, contabilidad y flujos E2E.
 - Frontend conectado a APIs reales con loading/error/empty states.
 - E2E, rate limiting, password recovery, MFA, OpenAPI, reportes, integraciones, manufactura y QA final.
