@@ -1,5 +1,15 @@
 # Compras
 
+## Solicitudes y aprobación
+
+- `POST /api/v1/purchase-requests`: crea una solicitud con productos activos de la organización del usuario.
+- `POST /api/v1/purchase-requests/:id/submit`: el solicitante envía su solicitud `DRAFT` a revisión.
+- `POST /api/v1/purchase-requests/:id/review`: un usuario con `purchase-requests.approve` la aprueba o rechaza; puede incluir una nota.
+
+Las transiciones válidas son `DRAFT → SUBMITTED → APPROVED|REJECTED`. Las transiciones y la auditoría se guardan en una transacción. Solo el creador puede enviar la solicitud; la revisión requiere permiso separado.
+
+Una orden vinculada a una solicitud requiere que esta pertenezca a la misma organización y esté `APPROVED`. El proveedor y todos los productos también deben ser activos y del tenant actual. Los productos deben estar presentes en la solicitud y las cantidades por línea no pueden exceder las cantidades aprobadas.
+
 ## Recepción de órdenes
 
 `POST /api/v1/purchase-orders/:id/receipts` registra una recepción parcial o total. Requiere autenticación y el permiso `purchase-orders.receive`.

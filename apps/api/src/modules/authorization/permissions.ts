@@ -13,6 +13,7 @@ export const permissions = {
   warehousesCreate: 'warehouses.create',
   purchaseRequestsRead: 'purchase-requests.read',
   purchaseRequestsCreate: 'purchase-requests.create',
+  purchaseRequestsApprove: 'purchase-requests.approve',
   purchaseOrdersCreate: 'purchase-orders.create',
   purchaseOrdersReceive: 'purchase-orders.receive',
   salesOrdersCreate: 'sales-orders.create',

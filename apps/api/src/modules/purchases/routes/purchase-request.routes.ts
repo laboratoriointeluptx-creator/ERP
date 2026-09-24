@@ -3,11 +3,35 @@ import type { ApiSuccess } from '../../../shared/http.js';
 import { requireAuthentication } from '../../authentication/middleware/authentication.middleware.js';
 import { requirePermission } from '../../authorization/middleware/authorization.middleware.js';
 import { permissions } from '../../authorization/permissions.js';
-import { getPurchaseRequests, registerPurchaseRequest } from '../services/purchase-request.service.js';
-import { createPurchaseRequestSchema, purchaseRequestQuerySchema } from '../validators/purchase-request.schemas.js';
+import { getPurchaseRequests, registerPurchaseRequest, transitionPurchaseRequest } from '../services/purchase-request.service.js';
+import { createPurchaseRequestSchema, purchaseRequestParamsSchema, purchaseRequestQuerySchema, reviewPurchaseRequestSchema } from '../validators/purchase-request.schemas.js';
 
 export const purchaseRequestRouter = Router();
 purchaseRequestRouter.use(requireAuthentication);
+
+purchaseRequestRouter.post('/:id/submit', requirePermission(permissions.purchaseRequestsCreate), async (request, response, next) => {
+  try {
+    const { id } = purchaseRequestParamsSchema.parse(request.params);
+    const result = await transitionPurchaseRequest(request.auth!.organizationId, request.auth!.sub, id, 'SUBMIT', undefined, request.ip);
+    const body: ApiSuccess<typeof result> = { success: true, data: result };
+    response.json(body);
+  } catch (error: unknown) {
+    next(error);
+  }
+});
+
+purchaseRequestRouter.post('/:id/review', requirePermission(permissions.purchaseRequestsApprove), async (request, response, next) => {
+  try {
+    const { id } = purchaseRequestParamsSchema.parse(request.params);
+    const review = reviewPurchaseRequestSchema.parse(request.body);
+    const action = review.decision === 'APPROVED' ? 'APPROVE' : 'REJECT';
+    const result = await transitionPurchaseRequest(request.auth!.organizationId, request.auth!.sub, id, action, review, request.ip);
+    const body: ApiSuccess<typeof result> = { success: true, data: result };
+    response.json(body);
+  } catch (error: unknown) {
+    next(error);
+  }
+});
 
 purchaseRequestRouter.get('/', requirePermission(permissions.purchaseRequestsRead), async (request, response, next) => {
   try {
