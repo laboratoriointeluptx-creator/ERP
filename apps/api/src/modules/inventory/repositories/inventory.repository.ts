@@ -5,9 +5,36 @@ import { InventoryModel } from '../models/inventory.model.js';
 import { InventoryMovementModel } from '../models/inventory-movement.model.js';
 import { WarehouseModel } from '../../warehouses/models/warehouse.model.js';
 import { ProductModel } from '../../products/models/product.model.js';
-import type { MovementInput } from '../validators/inventory.schemas.js';
+import type { InventoryMovementQuery, InventoryQuery, MovementInput } from '../validators/inventory.schemas.js';
 
 const outboundTypes = new Set(['SALE', 'CONSUMPTION', 'DAMAGE']);
+
+export const listInventoryBalances = async (organizationId: string, query: InventoryQuery) => {
+  const filter = {
+    organizationId,
+    ...(query.warehouseId ? { warehouseId: query.warehouseId } : {}),
+    ...(query.productId ? { productId: query.productId } : {}),
+  };
+  const [items, total] = await Promise.all([
+    InventoryModel.find(filter).sort({ updatedAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    InventoryModel.countDocuments(filter).exec(),
+  ]);
+  return { items, total };
+};
+
+export const listInventoryMovements = async (organizationId: string, query: InventoryMovementQuery) => {
+  const filter = {
+    organizationId,
+    ...(query.warehouseId ? { warehouseId: query.warehouseId } : {}),
+    ...(query.productId ? { productId: query.productId } : {}),
+    ...(query.type ? { type: query.type } : {}),
+  };
+  const [items, total] = await Promise.all([
+    InventoryMovementModel.find(filter).sort({ occurredAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    InventoryMovementModel.countDocuments(filter).exec(),
+  ]);
+  return { items, total };
+};
 
 export const applyInventoryMovement = async (organizationId: string, input: MovementInput): Promise<unknown> => {
   const session = await mongoose.startSession();

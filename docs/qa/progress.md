@@ -17,6 +17,7 @@
 - Purchase requests, purchase orders y sales orders.
 - Recepciones parciales de órdenes de compra con actualización transaccional de inventario, movimientos y auditoría.
 - Gestión tenant-scoped de almacenes, con paginación y asociación validada a sucursales.
+- Consulta paginada de saldos e historial de movimientos de inventario con filtros tenant-scoped.
 - Facturas, pagos y asientos balanceados como modelos base.
 - Workflows configurables y ejecuciones iniciales.
 - Branches tenant-scoped, request IDs, readiness y servicio de auditoria sanitizada.
@@ -28,7 +29,7 @@
 ## Validacion mas reciente
 
 - Typecheck de API, web, mobile y paquetes compartidos: PASS.
-- Tests backend: PASS (20 suites, 33 tests).
+- Tests backend: PASS (20 suites, 35 tests).
 - Build API y web: PASS.
 - Riesgo pendiente: vulnerabilidades transitivas del tooling Expo/Metro documentadas en `docs/frontend.md`.
 

@@ -16,4 +16,6 @@ La base de inventario separa:
 - `inventory`: saldo actual por almacen y producto.
 - `inventory_movements`: historial inmutable de operaciones.
 
-Los movimientos soportan compra, venta, devolucion, transferencia, ajuste, produccion, consumo y daño. La aplicacion de movimientos debera ejecutarse mediante un servicio transaccional antes de habilitar ajustes desde API.
+Los movimientos soportan compra, venta, devolucion, transferencia, ajuste, produccion, consumo y daño. La aplicación de ajustes valida producto y almacén dentro del tenant, actualiza el balance y registra el movimiento en una transacción.
+
+`GET /api/v1/inventory` lista saldos por organización, con filtros opcionales `warehouseId` y `productId`. `GET /api/v1/inventory/movements` lista el historial con filtros por almacén, producto y tipo. Ambas rutas requieren `inventory.read`, validan paginación limitada y aplican el tenant del token. Los índices de organización y fecha respaldan las consultas generales ordenadas más recientes primero.

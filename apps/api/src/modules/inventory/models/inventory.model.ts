@@ -12,6 +12,7 @@ const inventorySchema = new Schema(
 );
 
 inventorySchema.index({ organizationId: 1, warehouseId: 1, productId: 1 }, { unique: true });
+inventorySchema.index({ organizationId: 1, updatedAt: -1 });
 
 export type Inventory = InferSchemaType<typeof inventorySchema>;
 export const InventoryModel = model<Inventory>('Inventory', inventorySchema);

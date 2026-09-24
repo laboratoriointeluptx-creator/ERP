@@ -15,6 +15,7 @@ const inventoryMovementSchema = new Schema(
 );
 
 inventoryMovementSchema.index({ organizationId: 1, warehouseId: 1, productId: 1, occurredAt: -1 });
+inventoryMovementSchema.index({ organizationId: 1, occurredAt: -1 });
 
 export type InventoryMovement = InferSchemaType<typeof inventoryMovementSchema>;
 export const InventoryMovementModel = model<InventoryMovement>('InventoryMovement', inventoryMovementSchema);
