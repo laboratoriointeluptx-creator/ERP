@@ -25,4 +25,25 @@ export interface OrganizationSummary {
 
 export interface AuthSession {
   accessToken: string;
+  refreshToken: string;
+}
+
+export interface DashboardMetric {
+  key: string;
+  label: string;
+  value: number;
+}
+
+export interface DashboardActivity {
+  id: string;
+  module: string;
+  reference: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface DashboardSummary {
+  metrics: DashboardMetric[];
+  recentActivity: DashboardActivity[];
+  generatedAt: string;
 }

@@ -1,4 +1,4 @@
-import type { ApiFailure, ApiSuccess, AuthSession, OrganizationSummary } from '@erp-universal/types';
+import type { ApiFailure, ApiSuccess, AuthSession, DashboardSummary, OrganizationSummary } from '@erp-universal/types';
 
 export class ApiClientError extends Error {
   public readonly code: string;
@@ -30,6 +30,7 @@ export class ApiClient {
         ...init?.headers,
       },
     });
+    if (response.status === 204) return undefined as T;
     const body = (await response.json()) as ApiSuccess<T> | ApiFailure;
     if (!response.ok || !body.success) {
       throw new ApiClientError(response.status, body as ApiFailure);
@@ -43,5 +44,17 @@ export class ApiClient {
 
   public getCurrentOrganization(): Promise<OrganizationSummary> {
     return this.request<OrganizationSummary>('/api/v1/organizations/me');
+  }
+
+  public getDashboardSummary(): Promise<DashboardSummary> {
+    return this.request<DashboardSummary>('/api/v1/dashboard/summary');
+  }
+
+  public refresh(refreshToken: string): Promise<{ accessToken: string }> {
+    return this.request<{ accessToken: string }>('/api/v1/auth/refresh', { method: 'POST', body: JSON.stringify({ refreshToken }) });
+  }
+
+  public logout(refreshToken: string): Promise<void> {
+    return this.request<void>('/api/v1/auth/logout', { method: 'POST', body: JSON.stringify({ refreshToken }) });
   }
 }

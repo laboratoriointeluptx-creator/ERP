@@ -28,19 +28,19 @@
 - Branches tenant-scoped, request IDs, readiness y servicio de auditoria sanitizada.
 - Modelos iniciales de categories y units.
 - Cliente API y tipos compartidos.
-- Dashboard web y pantalla mobile inicial.
+- Dashboard web conectado a autenticación y métricas tenant-scoped por permisos; pantalla mobile sigue siendo prototipo.
 - CI con typecheck, tests, build y audit para API/web.
 
 ## Validacion mas reciente
 
 - Typecheck de API, web, mobile y paquetes compartidos: PASS.
-- Tests backend: PASS (21 suites, 49 tests).
+- Tests backend: PASS (22 suites, 51 tests).
 - Build API y web: PASS.
 - Riesgo pendiente: vulnerabilidades transitivas del tooling Expo/Metro documentadas en `docs/frontend.md`.
 
 ## Pendiente
 
-- Completar reglas de negocio de compras, ventas, facturacion y contabilidad.
-- Cuentas por cobrar/pagar, facturación, contabilidad y flujos E2E.
-- Frontend conectado a APIs reales con loading/error/empty states.
+- Completar reglas de negocio de compras, ventas, facturación fiscal y contabilidad; cuentas por cobrar/pagar tienen flujo operativo inicial.
+- Contabilidad automática desde operaciones, conciliación de pagos y flujos E2E.
+- Frontend web conectado en el dashboard; faltan pantallas CRUD y conexión de la app mobile a APIs reales.
 - E2E, rate limiting, password recovery, MFA, OpenAPI, reportes, integraciones, manufactura y QA final.

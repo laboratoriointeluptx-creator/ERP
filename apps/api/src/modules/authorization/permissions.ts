@@ -1,5 +1,8 @@
 export const permissions = {
   organizationsRead: 'organizations.read',
+  dashboardRead: 'dashboard.read',
+  salesOrdersRead: 'sales-orders.read',
+  purchaseOrdersRead: 'purchase-orders.read',
   organizationsUpdate: 'organizations.update',
   customersRead: 'customers.read',
   customersCreate: 'customers.create',
@@ -47,7 +50,7 @@ export type Permission = (typeof permissions)[keyof typeof permissions];
 
 const rolePermissions: Record<string, readonly Permission[]> = {
   admin: Object.values(permissions),
-  user: [permissions.organizationsRead, permissions.customersRead, permissions.suppliersRead, permissions.productsRead, permissions.inventoryRead, permissions.warehousesRead, permissions.purchaseRequestsRead],
+  user: [permissions.organizationsRead, permissions.dashboardRead, permissions.customersRead, permissions.suppliersRead, permissions.productsRead, permissions.inventoryRead, permissions.warehousesRead, permissions.purchaseRequestsRead],
 };
 
 export const roleHasPermission = (roles: readonly string[], permission: Permission): boolean =>

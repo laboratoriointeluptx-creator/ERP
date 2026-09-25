@@ -10,7 +10,7 @@ Fases iniciales: workspace TypeScript, API Express versionada, MongoDB/Mongoose,
 
 ## Arquitectura
 
-El proyecto usa un monolito modular preparado para extraer modulos posteriormente. Consulta [docs/architecture/initial-analysis.md](docs/architecture/initial-analysis.md) y [docs/architecture/architecture.md](docs/architecture/architecture.md).
+El proyecto usa un monolito modular preparado para extraer modulos posteriormente. Incluye API Express, dashboard web con React Native Web y una pantalla mobile inicial. Consulta [docs/architecture/initial-analysis.md](docs/architecture/initial-analysis.md) y [docs/architecture/architecture.md](docs/architecture/architecture.md).
 
 ## Requisitos
 
@@ -37,11 +37,21 @@ npm run dev --workspace apps/api
 
 El API escucha por defecto en `http://localhost:3000`.
 
+Para iniciar el dashboard web en otra terminal:
+
+```bash
+Copy-Item apps/web/.env.example apps/web/.env
+npm run dev:web
+```
+
+Configura `VITE_API_URL` en `apps/web/.env` si la API no está en `http://localhost:3000`.
+
 ## Scripts
 
 - `npm run typecheck`: valida TypeScript en los workspaces.
 - `npm test`: ejecuta las pruebas.
-- `npm run build`: compila el API.
+- `npm run build`: compila API y dashboard web.
+- `npm run dev:web`: inicia Vite para el dashboard.
 - `npm run lint`: ejecuta la comprobacion TypeScript usada como lint inicial.
 
 CI ejecuta `npm ci`, auditoria de dependencias, typecheck, tests y build en cada pull request y push a `main`.

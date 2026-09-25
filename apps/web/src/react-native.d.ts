@@ -4,6 +4,9 @@ declare module 'react-native' {
   interface CommonProps {
     children?: ReactNode;
     style?: CSSProperties | (CSSProperties | false | null | undefined)[];
+    accessibilityRole?: string;
+    accessibilityLabel?: string;
+    disabled?: boolean;
   }
 
   export const View: ComponentType<CommonProps>;
@@ -11,5 +14,14 @@ declare module 'react-native' {
   export const ScrollView: ComponentType<CommonProps & { contentContainerStyle?: CSSProperties }>;
   export const Text: ComponentType<CommonProps & { onPress?: () => void }>;
   export const Pressable: ComponentType<CommonProps & { onPress?: () => void }>;
+  export const TextInput: ComponentType<CommonProps & {
+    value?: string;
+    placeholder?: string;
+    autoCapitalize?: string;
+    keyboardType?: string;
+    secureTextEntry?: boolean;
+    onChangeText?: (value: string) => void;
+    onSubmitEditing?: () => void;
+  }>;
   export const StyleSheet: { create<T extends Record<string, CSSProperties>>(styles: T): T };
 }

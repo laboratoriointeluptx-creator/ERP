@@ -2,6 +2,13 @@ import request from 'supertest';
 import { app } from '../src/app.js';
 
 describe('health endpoints', () => {
+  it('requires authentication to read the dashboard summary', async () => {
+    const response = await request(app).get('/api/v1/dashboard/summary');
+
+    expect(response.status).toBe(401);
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
+  });
+
   it('returns the API status', async () => {
     const response = await request(app).get('/api/v1/health');
 

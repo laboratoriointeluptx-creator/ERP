@@ -23,6 +23,7 @@ import { contactActivityRouter } from './modules/crm/routes/contact-activity.rou
 import { shipmentRouter } from './modules/logistics/routes/shipment.routes.js';
 import { warehouseRouter } from './modules/warehouses/routes/warehouse.routes.js';
 import { invoiceRouter, paymentRouter, supplierInvoiceRouter, supplierPaymentRouter } from './modules/finance/routes/finance.routes.js';
+import { dashboardRouter } from './modules/dashboard/routes/dashboard.routes.js';
 import { errorHandler, notFoundHandler } from './shared/http.js';
 import { requestIdMiddleware } from './shared/request-id.js';
 
@@ -58,5 +59,6 @@ app.use(`${env.API_PREFIX}/invoices`, invoiceRouter);
 app.use(`${env.API_PREFIX}/payments`, paymentRouter);
 app.use(`${env.API_PREFIX}/supplier-invoices`, supplierInvoiceRouter);
 app.use(`${env.API_PREFIX}/supplier-payments`, supplierPaymentRouter);
+app.use(`${env.API_PREFIX}/dashboard`, dashboardRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);

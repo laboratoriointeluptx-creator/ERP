@@ -7,6 +7,7 @@
   "scripts": {
     "build": "npm run build --workspace apps/api && npm run build --workspace apps/web",
     "dev": "npm run dev --workspace apps/api",
+    "dev:web": "npm run dev --workspace apps/web",
     "lint": "npm run lint --workspace apps/api",
     "test": "npm run test --workspace apps/api",
     "typecheck": "npm run typecheck --workspace apps/api && npm run typecheck --workspace packages/types && npm run typecheck --workspace packages/api-client && npm run typecheck --workspace apps/web && npm run typecheck --workspace apps/mobile"
