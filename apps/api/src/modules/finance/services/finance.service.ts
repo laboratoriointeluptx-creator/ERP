@@ -6,7 +6,7 @@ import { SalesOrderModel } from '../../sales/models/sales-order.model.js';
 import { ProductModel } from '../../products/models/product.model.js';
 import { InvoiceModel } from '../models/invoice.model.js';
 import { PaymentModel } from '../models/payment.model.js';
-import type { CreatePaymentInput, IssueInvoiceInput } from '../validators/finance.schemas.js';
+import type { CreatePaymentInput, InvoiceQuery, IssueInvoiceInput, PaymentQuery } from '../validators/finance.schemas.js';
 
 export const calculateInvoiceTotals = (lines: Array<{ quantity: string; unitPrice: string }>) => {
   const subtotal = lines.reduce((sum, line) => addDecimal(sum, multiplyDecimal(line.quantity, line.unitPrice)), '0');
@@ -18,6 +18,45 @@ export const calculateInvoicePayment = (total: string, paid: string, amount: str
   if (isGreaterThan(amount, balance)) throw new HttpError(409, 'PAYMENT_EXCEEDS_BALANCE', 'Payment exceeds the invoice balance');
   const nextPaid = addDecimal(paid, amount);
   return { paid: nextPaid, balance: subtractDecimal(total, nextPaid), status: nextPaid === total ? 'PAID' as const : 'PARTIALLY_PAID' as const };
+};
+
+export const listInvoices = async (organizationId: string, query: InvoiceQuery) => {
+  const filter = {
+    organizationId,
+    ...(query.status ? { status: query.status } : {}),
+    ...(query.customerId ? { customerId: query.customerId } : {}),
+  };
+  const [invoices, total] = await Promise.all([
+    InvoiceModel.find(filter).sort({ createdAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    InvoiceModel.countDocuments(filter).exec(),
+  ]);
+  const invoiceIds = invoices.map((invoice) => invoice._id);
+  const payments = invoiceIds.length
+    ? await PaymentModel.find({ organizationId, invoiceId: { $in: invoiceIds }, status: 'CONFIRMED' }).exec()
+    : [];
+  const paidByInvoice = new Map<string, string>();
+  for (const payment of payments) {
+    const key = String(payment.invoiceId);
+    paidByInvoice.set(key, addDecimal(paidByInvoice.get(key) ?? '0', payment.amount));
+  }
+  const data = invoices.map((invoice) => {
+    const paidAmount = paidByInvoice.get(String(invoice._id)) ?? '0';
+    return { ...invoice.toObject(), paidAmount, balanceDue: subtractDecimal(invoice.total, paidAmount) };
+  });
+  return { data, meta: { page: query.page, limit: query.limit, total, pages: Math.ceil(total / query.limit) } };
+};
+
+export const listPayments = async (organizationId: string, query: PaymentQuery) => {
+  const filter = {
+    organizationId,
+    ...(query.invoiceId ? { invoiceId: query.invoiceId } : {}),
+    ...(query.status ? { status: query.status } : {}),
+  };
+  const [data, total] = await Promise.all([
+    PaymentModel.find(filter).sort({ createdAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    PaymentModel.countDocuments(filter).exec(),
+  ]);
+  return { data, meta: { page: query.page, limit: query.limit, total, pages: Math.ceil(total / query.limit) } };
 };
 
 export const issueInvoiceFromSalesOrder = async (organizationId: string, userId: string, input: IssueInvoiceInput, ip?: string) => {

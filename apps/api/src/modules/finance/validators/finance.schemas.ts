@@ -11,5 +11,18 @@ export const createPaymentSchema = z.object({
   reference: z.string().trim().max(120).optional(),
 }).strict();
 export const financeParamsSchema = z.object({ id: objectId });
+const pagination = { page: z.coerce.number().int().min(1).default(1), limit: z.coerce.number().int().min(1).max(100).default(25) };
+export const invoiceQuerySchema = z.object({
+  ...pagination,
+  status: z.enum(['DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED']).optional(),
+  customerId: objectId.optional(),
+});
+export const paymentQuerySchema = z.object({
+  ...pagination,
+  invoiceId: objectId.optional(),
+  status: z.enum(['PENDING', 'CONFIRMED', 'CANCELLED']).optional(),
+});
 export type IssueInvoiceInput = z.infer<typeof issueInvoiceSchema>;
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>;
+export type InvoiceQuery = z.infer<typeof invoiceQuerySchema>;
+export type PaymentQuery = z.infer<typeof paymentQuerySchema>;

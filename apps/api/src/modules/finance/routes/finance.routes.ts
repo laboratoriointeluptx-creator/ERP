@@ -3,11 +3,17 @@ import type { ApiSuccess } from '../../../shared/http.js';
 import { requireAuthentication } from '../../authentication/middleware/authentication.middleware.js';
 import { requirePermission } from '../../authorization/middleware/authorization.middleware.js';
 import { permissions } from '../../authorization/permissions.js';
-import { issueInvoiceFromSalesOrder, registerPayment } from '../services/finance.service.js';
-import { createPaymentSchema, issueInvoiceSchema } from '../validators/finance.schemas.js';
+import { issueInvoiceFromSalesOrder, listInvoices, listPayments, registerPayment } from '../services/finance.service.js';
+import { createPaymentSchema, invoiceQuerySchema, issueInvoiceSchema, paymentQuerySchema } from '../validators/finance.schemas.js';
 
 export const invoiceRouter = Router();
 invoiceRouter.use(requireAuthentication);
+invoiceRouter.get('/', requirePermission(permissions.invoicesRead), async (request, response, next) => {
+  try {
+    const result = await listInvoices(request.auth!.organizationId, invoiceQuerySchema.parse(request.query));
+    response.json({ success: true, data: result.data, meta: result.meta } satisfies ApiSuccess<typeof result.data>);
+  } catch (error: unknown) { next(error); }
+});
 invoiceRouter.post('/', requirePermission(permissions.invoicesIssue), async (request, response, next) => {
   try {
     const result = await issueInvoiceFromSalesOrder(request.auth!.organizationId, request.auth!.sub, issueInvoiceSchema.parse(request.body), request.ip);
@@ -17,6 +23,12 @@ invoiceRouter.post('/', requirePermission(permissions.invoicesIssue), async (req
 
 export const paymentRouter = Router();
 paymentRouter.use(requireAuthentication);
+paymentRouter.get('/', requirePermission(permissions.paymentsRead), async (request, response, next) => {
+  try {
+    const result = await listPayments(request.auth!.organizationId, paymentQuerySchema.parse(request.query));
+    response.json({ success: true, data: result.data, meta: result.meta } satisfies ApiSuccess<typeof result.data>);
+  } catch (error: unknown) { next(error); }
+});
 paymentRouter.post('/', requirePermission(permissions.paymentsCreate), async (request, response, next) => {
   try {
     const result = await registerPayment(request.auth!.organizationId, request.auth!.sub, createPaymentSchema.parse(request.body), request.ip);

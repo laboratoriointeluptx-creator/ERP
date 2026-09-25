@@ -21,7 +21,7 @@
 - Envío y aprobación/rechazo auditados de solicitudes de compra; órdenes vinculadas validadas contra solicitudes aprobadas.
 - Creación tenant-scoped de pedidos de venta y confirmación transaccional con reserva de existencias.
 - Cancelación segura de pedidos previos al despacho; creación, cancelación y despacho transaccional de envíos con movimientos de salida.
-- Emisión de facturas desde pedidos completados y registro transaccional de pagos con límites de saldo y auditoría.
+- Emisión de facturas desde pedidos completados, registro transaccional de pagos con límite de saldo, y consultas paginadas de cuentas por cobrar/pagos con auditoría.
 - Facturas y pagos integrados en API con RBAC e aislamiento por organización.
 - Asientos balanceados como modelo base.
 - Workflows configurables y ejecuciones iniciales.

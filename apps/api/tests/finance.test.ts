@@ -4,9 +4,13 @@ import { calculateInvoicePayment, calculateInvoiceTotals } from '../src/modules/
 
 describe('finance', () => {
   it('requires authentication to issue invoices and register payments', async () => {
+    const invoiceList = await request(app).get('/api/v1/invoices');
     const invoice = await request(app).post('/api/v1/invoices').send({});
+    const paymentList = await request(app).get('/api/v1/payments');
     const payment = await request(app).post('/api/v1/payments').send({});
+    expect(invoiceList.status).toBe(401);
     expect(invoice.status).toBe(401);
+    expect(paymentList.status).toBe(401);
     expect(payment.status).toBe(401);
   });
 
