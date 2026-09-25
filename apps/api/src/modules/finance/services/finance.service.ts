@@ -6,7 +6,13 @@ import { SalesOrderModel } from '../../sales/models/sales-order.model.js';
 import { ProductModel } from '../../products/models/product.model.js';
 import { InvoiceModel } from '../models/invoice.model.js';
 import { PaymentModel } from '../models/payment.model.js';
-import type { CreatePaymentInput, InvoiceQuery, IssueInvoiceInput, PaymentQuery } from '../validators/finance.schemas.js';
+import { PurchaseOrderModel } from '../../purchases/models/purchase-order.model.js';
+import { SupplierInvoiceModel } from '../models/supplier-invoice.model.js';
+import { SupplierPaymentModel } from '../models/supplier-payment.model.js';
+import type {
+  CreatePaymentInput, CreateSupplierInvoiceInput, CreateSupplierPaymentInput,
+  InvoiceQuery, IssueInvoiceInput, PaymentQuery, SupplierInvoiceQuery, SupplierPaymentQuery,
+} from '../validators/finance.schemas.js';
 
 export const calculateInvoiceTotals = (lines: Array<{ quantity: string; unitPrice: string }>) => {
   const subtotal = lines.reduce((sum, line) => addDecimal(sum, multiplyDecimal(line.quantity, line.unitPrice)), '0');
@@ -18,6 +24,13 @@ export const calculateInvoicePayment = (total: string, paid: string, amount: str
   if (isGreaterThan(amount, balance)) throw new HttpError(409, 'PAYMENT_EXCEEDS_BALANCE', 'Payment exceeds the invoice balance');
   const nextPaid = addDecimal(paid, amount);
   return { paid: nextPaid, balance: subtractDecimal(total, nextPaid), status: nextPaid === total ? 'PAID' as const : 'PARTIALLY_PAID' as const };
+};
+
+export const calculatePayablePayment = (amountDue: string, paid: string, amount: string) => {
+  const balance = subtractDecimal(amountDue, paid);
+  if (isGreaterThan(amount, balance)) throw new HttpError(409, 'PAYMENT_EXCEEDS_PAYABLE', 'Payment exceeds the supplier invoice balance');
+  const nextPaid = addDecimal(paid, amount);
+  return { paid: nextPaid, balance: subtractDecimal(amountDue, nextPaid), status: nextPaid === amountDue ? 'PAID' as const : 'PARTIALLY_PAID' as const };
 };
 
 export const listInvoices = async (organizationId: string, query: InvoiceQuery) => {
@@ -57,6 +70,109 @@ export const listPayments = async (organizationId: string, query: PaymentQuery) 
     PaymentModel.countDocuments(filter).exec(),
   ]);
   return { data, meta: { page: query.page, limit: query.limit, total, pages: Math.ceil(total / query.limit) } };
+};
+
+export const listSupplierInvoices = async (organizationId: string, query: SupplierInvoiceQuery) => {
+  const filter = {
+    organizationId,
+    ...(query.status ? { status: query.status } : {}),
+    ...(query.supplierId ? { supplierId: query.supplierId } : {}),
+  };
+  const [invoices, total] = await Promise.all([
+    SupplierInvoiceModel.find(filter).sort({ createdAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    SupplierInvoiceModel.countDocuments(filter).exec(),
+  ]);
+  const invoiceIds = invoices.map((invoice) => invoice._id);
+  const payments = invoiceIds.length
+    ? await SupplierPaymentModel.find({ organizationId, supplierInvoiceId: { $in: invoiceIds }, status: 'CONFIRMED' }).exec()
+    : [];
+  const paidByInvoice = new Map<string, string>();
+  for (const payment of payments) {
+    const key = String(payment.supplierInvoiceId);
+    paidByInvoice.set(key, addDecimal(paidByInvoice.get(key) ?? '0', payment.amount));
+  }
+  const data = invoices.map((invoice) => {
+    const paidAmount = paidByInvoice.get(String(invoice._id)) ?? '0';
+    return { ...invoice.toObject(), paidAmount, balanceDue: subtractDecimal(invoice.amount, paidAmount) };
+  });
+  return { data, meta: { page: query.page, limit: query.limit, total, pages: Math.ceil(total / query.limit) } };
+};
+
+export const listSupplierPayments = async (organizationId: string, query: SupplierPaymentQuery) => {
+  const filter = {
+    organizationId,
+    ...(query.supplierInvoiceId ? { supplierInvoiceId: query.supplierInvoiceId } : {}),
+    ...(query.status ? { status: query.status } : {}),
+  };
+  const [data, total] = await Promise.all([
+    SupplierPaymentModel.find(filter).sort({ createdAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    SupplierPaymentModel.countDocuments(filter).exec(),
+  ]);
+  return { data, meta: { page: query.page, limit: query.limit, total, pages: Math.ceil(total / query.limit) } };
+};
+
+export const registerSupplierInvoice = async (organizationId: string, userId: string, input: CreateSupplierInvoiceInput, ip?: string) => {
+  const session = await mongoose.startSession();
+  try {
+    let result: unknown;
+    await session.withTransaction(async () => {
+      const order = await PurchaseOrderModel.findOne({
+        _id: input.purchaseOrderId, organizationId, status: { $in: ['SENT', 'PARTIALLY_RECEIVED', 'RECEIVED'] },
+      }).session(session).exec();
+      if (!order) throw new HttpError(409, 'PURCHASE_ORDER_NOT_BILLABLE', 'Supplier invoices require a sent, non-cancelled purchase order');
+      const [invoice] = await SupplierInvoiceModel.create([{
+        organizationId,
+        supplierId: order.supplierId,
+        purchaseOrderId: order._id,
+        number: input.number,
+        amount: input.amount,
+        currency: order.currency,
+        status: 'OPEN',
+      }], { session });
+      if (!invoice) throw new Error('Supplier invoice creation returned no document');
+      await recordAuditEvent({
+        organizationId, userId, action: 'supplier-invoice.created', module: 'finance', entity: 'SupplierInvoice', entityId: String(invoice._id),
+        ...(ip ? { ip } : {}), after: { number: invoice.number, amount: invoice.amount, purchaseOrderId: String(order._id) },
+      }, session);
+      result = invoice;
+    });
+    return result;
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'MongoServerError' && 'code' in error && error.code === 11000) {
+      throw new HttpError(409, 'SUPPLIER_INVOICE_EXISTS', 'Supplier invoice number already exists for this supplier');
+    }
+    throw error;
+  } finally { await session.endSession(); }
+};
+
+export const registerSupplierPayment = async (organizationId: string, userId: string, input: CreateSupplierPaymentInput, ip?: string) => {
+  const session = await mongoose.startSession();
+  try {
+    let result: unknown;
+    await session.withTransaction(async () => {
+      const invoice = await SupplierInvoiceModel.findOne({ _id: input.supplierInvoiceId, organizationId }).session(session).exec();
+      if (!invoice) throw new HttpError(404, 'SUPPLIER_INVOICE_NOT_FOUND', 'Supplier invoice not found');
+      if (invoice.status !== 'OPEN' && invoice.status !== 'PARTIALLY_PAID') {
+        throw new HttpError(409, 'SUPPLIER_INVOICE_NOT_PAYABLE', 'Supplier invoice is not open for payment');
+      }
+      const priorPayments = await SupplierPaymentModel.find({ organizationId, supplierInvoiceId: invoice._id, status: 'CONFIRMED' }).session(session).exec();
+      const paid = priorPayments.reduce((sum, payment) => addDecimal(sum, payment.amount), '0');
+      const state = calculatePayablePayment(invoice.amount, paid, input.amount);
+      const [payment] = await SupplierPaymentModel.create([{
+        organizationId, supplierId: invoice.supplierId, supplierInvoiceId: invoice._id,
+        amount: input.amount, currency: invoice.currency, method: input.method, reference: input.reference, status: 'CONFIRMED',
+      }], { session });
+      if (!payment) throw new Error('Supplier payment creation returned no document');
+      invoice.status = state.status;
+      await invoice.save({ session });
+      await recordAuditEvent({
+        organizationId, userId, action: 'supplier-payment.confirmed', module: 'finance', entity: 'SupplierPayment', entityId: String(payment._id),
+        ...(ip ? { ip } : {}), after: { supplierInvoiceId: String(invoice._id), amount: payment.amount, status: invoice.status },
+      }, session);
+      result = payment;
+    });
+    return result;
+  } finally { await session.endSession(); }
 };
 
 export const issueInvoiceFromSalesOrder = async (organizationId: string, userId: string, input: IssueInvoiceInput, ip?: string) => {
