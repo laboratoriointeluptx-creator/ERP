@@ -46,6 +46,10 @@ npm run dev:web
 
 Configura `VITE_API_URL` en `apps/web/.env` si la API no está en `http://localhost:3000`.
 
+## Despliegue en Render
+
+El repositorio incluye un Blueprint de Render para desplegar API y web. Consulta [docs/deployment/render.md](docs/deployment/render.md) antes de sincronizarlo; requiere la URI de MongoDB Atlas y el nombre de la base de datos.
+
 ## Scripts
 
 - `npm run typecheck`: valida TypeScript en los workspaces.

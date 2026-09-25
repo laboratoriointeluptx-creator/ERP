@@ -4,7 +4,7 @@ import { connectToDatabase } from './infrastructure/database.js';
 
 const start = async (): Promise<void> => {
   await connectToDatabase();
-  app.listen(env.PORT, () => {
+  app.listen(env.PORT, '0.0.0.0', () => {
     console.log(`ERP API listening on port ${env.PORT}`);
   });
 };

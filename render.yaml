@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: erp-universal-api
+    runtime: node
+    plan: free
+    region: ohio
+    buildCommand: npm ci && npm run build --workspace apps/api
+    startCommand: node apps/api/dist/src/server.js
+    healthCheckPath: /health/ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB_NAME
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+
+  - type: web
+    name: erp-universal-web
+    runtime: static
+    buildCommand: npm ci && npm run build --workspace apps/web
+    staticPublishPath: apps/web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: erp-universal-api
+          envVarKey: RENDER_EXTERNAL_URL
