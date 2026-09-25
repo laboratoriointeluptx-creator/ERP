@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/src/server.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "dev": "tsx watch src/server.ts",
     "lint": "tsc -p tsconfig.json --noEmit",
     "seed": "tsx src/infrastructure/seed.ts",
