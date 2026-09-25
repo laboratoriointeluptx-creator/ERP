@@ -21,7 +21,9 @@
 - Envío y aprobación/rechazo auditados de solicitudes de compra; órdenes vinculadas validadas contra solicitudes aprobadas.
 - Creación tenant-scoped de pedidos de venta y confirmación transaccional con reserva de existencias.
 - Cancelación segura de pedidos previos al despacho; creación, cancelación y despacho transaccional de envíos con movimientos de salida.
-- Facturas, pagos y asientos balanceados como modelos base.
+- Emisión de facturas desde pedidos completados y registro transaccional de pagos con límites de saldo y auditoría.
+- Facturas y pagos integrados en API con RBAC e aislamiento por organización.
+- Asientos balanceados como modelo base.
 - Workflows configurables y ejecuciones iniciales.
 - Branches tenant-scoped, request IDs, readiness y servicio de auditoria sanitizada.
 - Modelos iniciales de categories y units.
@@ -32,7 +34,7 @@
 ## Validacion mas reciente
 
 - Typecheck de API, web, mobile y paquetes compartidos: PASS.
-- Tests backend: PASS (20 suites, 45 tests).
+- Tests backend: PASS (21 suites, 48 tests).
 - Build API y web: PASS.
 - Riesgo pendiente: vulnerabilidades transitivas del tooling Expo/Metro documentadas en `docs/frontend.md`.
 

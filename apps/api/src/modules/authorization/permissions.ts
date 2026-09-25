@@ -21,6 +21,7 @@ export const permissions = {
   salesOrdersCancel: 'sales-orders.cancel',
   invoicesRead: 'invoices.read',
   invoicesCreate: 'invoices.create',
+  invoicesIssue: 'invoices.issue',
   paymentsRead: 'payments.read',
   paymentsCreate: 'payments.create',
   accountingRead: 'accounting.read',

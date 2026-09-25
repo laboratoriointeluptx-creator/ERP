@@ -29,6 +29,7 @@ const invoiceSchema = new Schema(
 
 invoiceSchema.index({ organizationId: 1, number: 1 }, { unique: true });
 invoiceSchema.index({ organizationId: 1, customerId: 1, status: 1, createdAt: -1 });
+invoiceSchema.index({ organizationId: 1, salesOrderId: 1 }, { unique: true, sparse: true });
 
 export type Invoice = InferSchemaType<typeof invoiceSchema>;
 export const InvoiceModel = model<Invoice>('Invoice', invoiceSchema);

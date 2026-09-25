@@ -24,3 +24,5 @@ export const subtractDecimal = (left: string, right: string): string => format(p
 export const isGreaterThan = (left: string, right: string): boolean => parse(left) > parse(right);
 
 export const areEqual = (left: string, right: string): boolean => parse(left) === parse(right);
+
+export const multiplyDecimal = (left: string, right: string): string => format((parse(left) * parse(right)) / SCALE);
