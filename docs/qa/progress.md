@@ -29,6 +29,9 @@
 - Modelos iniciales de categories y units.
 - Cliente API y tipos compartidos.
 - Dashboard web conectado a autenticación y métricas tenant-scoped por permisos; pantalla mobile sigue siendo prototipo.
+- Salidas manuales de inventario respetan existencias reservadas; movimientos manuales auditados y limitados a ajustes/daños.
+- Asientos contables validan cuentas activas dentro de la organización y se guardan con auditoría transaccional.
+- Login limitado a ocho intentos por organización/correo en 15 minutos con contadores compartidos en MongoDB; CORS configurado por orígenes permitidos.
 - CI con typecheck, tests, build y audit para API/web.
 
 ## Validacion mas reciente
@@ -43,4 +46,4 @@
 - Completar reglas de negocio de compras, ventas, facturación fiscal y contabilidad; cuentas por cobrar/pagar tienen flujo operativo inicial.
 - Contabilidad automática desde operaciones, conciliación de pagos y flujos E2E.
 - Frontend web conectado en el dashboard; faltan pantallas CRUD y conexión de la app mobile a APIs reales.
-- E2E, rate limiting, password recovery, MFA, OpenAPI, reportes, integraciones, manufactura y QA final.
+- Límite de intentos por IP, password recovery, MFA, OpenAPI, reportes, integraciones, ejecución real de workflows, manufactura y QA final.

@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { SessionModel } from '../models/session.model.js';
+import { LoginAttemptModel } from '../models/login-attempt.model.js';
 import { HttpError } from '../../../shared/http.js';
 import { findActiveUserById, findUserForLogin } from '../../users/repositories/user.repository.js';
 import { verifyPassword } from './password.service.js';
@@ -7,14 +8,57 @@ import { createAccessToken, createRefreshToken, verifyRefreshToken } from './tok
 import type { LoginInput } from '../validators/auth.schemas.js';
 
 const hashToken = (token: string): string => createHash('sha256').update(token).digest('hex');
+const loginAttemptLimit = 8;
+const loginAttemptWindowMs = 15 * 60 * 1000;
+
+const loginAttemptKey = (organizationId: string, email: string): string =>
+  createHash('sha256').update(`${organizationId.trim().toUpperCase()}:${email.trim().toLowerCase()}`).digest('hex');
+
+const recordLoginAttempt = async (key: string): Promise<number> => {
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + loginAttemptWindowMs);
+  try {
+    const bucket = await LoginAttemptModel.findOneAndUpdate(
+      { key, expiresAt: { $gt: now } },
+      { $inc: { attempts: 1 }, $setOnInsert: { expiresAt } },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    ).exec();
+    return bucket?.attempts ?? 1;
+  } catch (error: unknown) {
+    if (!(error instanceof Error && error.name === 'MongoServerError' && 'code' in error && error.code === 11000)) {
+      throw error;
+    }
+
+    // A unique-key race can occur when two first attempts arrive together or a bucket expires.
+    const expiredBucket = await LoginAttemptModel.findOneAndUpdate(
+      { key, expiresAt: { $lte: now } },
+      { $set: { attempts: 1, expiresAt } },
+      { new: true },
+    ).exec();
+    if (expiredBucket) return expiredBucket.attempts;
+
+    const activeBucket = await LoginAttemptModel.findOneAndUpdate(
+      { key, expiresAt: { $gt: now } },
+      { $inc: { attempts: 1 } },
+      { new: true },
+    ).exec();
+    return activeBucket?.attempts ?? loginAttemptLimit + 1;
+  }
+};
 
 export const login = async (input: LoginInput): Promise<{ accessToken: string; refreshToken: string }> => {
+  const attemptKey = loginAttemptKey(input.organizationId, input.email);
+  if (await recordLoginAttempt(attemptKey) > loginAttemptLimit) {
+    throw new HttpError(429, 'LOGIN_RATE_LIMITED', 'Too many login attempts. Try again later.');
+  }
+
   const user = await findUserForLogin(input.organizationId, input.email);
   const validPassword = user ? await verifyPassword(input.password, user.passwordHash) : false;
 
   if (!user || !validPassword) {
     throw new HttpError(401, 'INVALID_CREDENTIALS', 'Invalid credentials');
   }
+  await LoginAttemptModel.deleteOne({ key: attemptKey }).exec();
 
   const session = await SessionModel.create({
     organizationId: user.organizationId,
