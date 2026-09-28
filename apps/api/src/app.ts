@@ -32,7 +32,12 @@ export const app = express();
 app.disable('x-powered-by');
 app.use(requestIdMiddleware);
 app.use(helmet());
-app.use(cors());
+const allowedOrigins = new Set(env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean));
+app.use(cors({
+  origin: (origin, callback) => {
+    callback(null, !origin || allowedOrigins.has(origin));
+  },
+}));
 app.use(express.json({ limit: '1mb' }));
 
 app.use('/health', healthRouter(databaseHealth));

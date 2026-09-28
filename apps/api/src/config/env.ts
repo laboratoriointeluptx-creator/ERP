@@ -9,6 +9,7 @@ const environmentSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
   API_PREFIX: z.string().startsWith('/').default('/api/v1'),
+  CORS_ORIGINS: z.string().default('http://localhost:5173'),
   MONGODB_URI: z.string().trim().min(1).optional(),
   MONGODB_DB_NAME: z.string().trim().min(1).default('erp_universal_development'),
   JWT_SECRET: z.preprocess((value) => (value === '' ? undefined : value), z.string().min(32).optional()),

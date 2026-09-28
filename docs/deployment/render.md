@@ -6,8 +6,9 @@ El archivo raíz `render.yaml` define dos servicios enlazados al mismo repositor
 
 1. En Render, selecciona **New > Blueprint** y conecta `laboratoriointeluptx-creator/ERP`.
 2. En la revisión del Blueprint, completa `MONGODB_URI` con la URI de MongoDB Atlas y `MONGODB_DB_NAME` con el mismo nombre de base de datos que usa el `.env` local.
-3. Render genera `JWT_SECRET` y `JWT_REFRESH_SECRET`. No reutilices secretos locales ni publiques valores en `render.yaml`.
-4. Sincroniza el Blueprint. Se crearán `erp-universal-api` y `erp-universal-web` en Ohio; la API comprueba la base de datos en `/health/ready`.
+3. Configura `CORS_ORIGINS` con el origen público del servicio web (por ejemplo, `https://erp-universal-web.onrender.com`). En desarrollo local, añade `http://localhost:5173` separado por coma si necesitas ambos.
+4. Render genera `JWT_SECRET` y `JWT_REFRESH_SECRET`. No reutilices secretos locales ni publiques valores en `render.yaml`.
+5. Sincroniza el Blueprint. Se crearán `erp-universal-api` y `erp-universal-web` en Ohio; la API comprueba la base de datos en `/health/ready`.
 
 ## Acceso de Atlas
 

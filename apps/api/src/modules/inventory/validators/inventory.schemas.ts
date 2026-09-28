@@ -24,7 +24,8 @@ export const inventoryMovementQuerySchema = z.object({
 export const movementSchema = z.object({
   warehouseId: objectId,
   productId: objectId,
-  type: z.enum(['PURCHASE', 'SALE', 'RETURN', 'TRANSFER', 'ADJUSTMENT', 'PRODUCTION', 'CONSUMPTION', 'DAMAGE']),
+  // Receipts, sales, transfers and production must go through their own workflows.
+  type: z.enum(['ADJUSTMENT', 'DAMAGE']),
   quantity,
   referenceType: z.string().trim().max(80).optional(),
   referenceId: z.string().trim().max(80).optional(),

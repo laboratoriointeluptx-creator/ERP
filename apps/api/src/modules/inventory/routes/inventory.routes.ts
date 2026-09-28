@@ -33,7 +33,12 @@ inventoryRouter.get('/movements', requirePermission(permissions.inventoryRead), 
 
 inventoryRouter.post('/movements', requirePermission(permissions.inventoryAdjust), async (request, response, next) => {
   try {
-    const data = await applyInventoryMovement(request.auth!.organizationId, movementSchema.parse(request.body));
+    const data = await applyInventoryMovement(
+      request.auth!.organizationId,
+      request.auth!.sub,
+      movementSchema.parse(request.body),
+      request.ip,
+    );
     const body: ApiSuccess<typeof data> = { success: true, data };
     response.status(201).json(body);
   } catch (error: unknown) {

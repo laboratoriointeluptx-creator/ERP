@@ -11,7 +11,12 @@ journalEntryRouter.use(requireAuthentication);
 
 journalEntryRouter.post('/', requirePermission(permissions.accountingPost), async (request, response, next) => {
   try {
-    const entry = await registerJournalEntry(request.auth!.organizationId, request.auth!.sub, createJournalEntrySchema.parse(request.body));
+    const entry = await registerJournalEntry(
+      request.auth!.organizationId,
+      request.auth!.sub,
+      createJournalEntrySchema.parse(request.body),
+      request.ip,
+    );
     const body: ApiSuccess<typeof entry> = { success: true, data: entry };
     response.status(201).json(body);
   } catch (error: unknown) {
