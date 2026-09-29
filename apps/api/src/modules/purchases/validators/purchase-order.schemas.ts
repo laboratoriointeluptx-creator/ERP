@@ -21,6 +21,16 @@ export const receivePurchaseOrderParamsSchema = z.object({
   id: objectId,
 });
 
+export const returnablePurchaseOrderQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+}).strict();
+export const purchaseOrderQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+  status: z.enum(['DRAFT', 'SENT', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CANCELLED']).optional(),
+}).strict();
+
 export const receivePurchaseOrderSchema = z.object({
   warehouseId: objectId,
   lines: z.array(z.object({ productId: objectId, quantity: decimal }).strict()).min(1),

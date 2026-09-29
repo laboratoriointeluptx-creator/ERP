@@ -12,7 +12,7 @@ declare module 'react-native' {
   export const View: ComponentType<CommonProps>;
   export const SafeAreaView: ComponentType<CommonProps>;
   export const ScrollView: ComponentType<CommonProps & { contentContainerStyle?: CSSProperties }>;
-  export const Text: ComponentType<CommonProps & { onPress?: () => void }>;
+  export const Text: ComponentType<CommonProps & { onPress?: () => void; numberOfLines?: number }>;
   export const Pressable: ComponentType<CommonProps & { onPress?: () => void }>;
   export const TextInput: ComponentType<CommonProps & {
     value?: string;

@@ -5,10 +5,10 @@ import { requirePermission } from '../../authorization/middleware/authorization.
 import { permissions } from '../../authorization/permissions.js';
 import {
   issueInvoiceFromSalesOrder, listInvoices, listPayments, listSupplierInvoices, listSupplierPayments,
-  registerPayment, registerSupplierInvoice, registerSupplierPayment,
+  listCreditMemos, listCustomerRefunds, registerCreditMemo, registerCustomerRefund, registerPayment, registerSupplierInvoice, registerSupplierPayment,
 } from '../services/finance.service.js';
 import {
-  createPaymentSchema, createSupplierInvoiceSchema, createSupplierPaymentSchema, invoiceQuerySchema,
+  createCreditMemoSchema, creditMemoQuerySchema, createCustomerRefundSchema, customerRefundQuerySchema, createPaymentSchema, createSupplierInvoiceSchema, createSupplierPaymentSchema, invoiceQuerySchema,
   issueInvoiceSchema, paymentQuerySchema, supplierInvoiceQuerySchema, supplierPaymentQuerySchema,
 } from '../validators/finance.schemas.js';
 
@@ -18,6 +18,38 @@ invoiceRouter.get('/', requirePermission(permissions.invoicesRead), async (reque
   try {
     const result = await listInvoices(request.auth!.organizationId, invoiceQuerySchema.parse(request.query));
     response.json({ success: true, data: result.data, meta: result.meta } satisfies ApiSuccess<typeof result.data>);
+  } catch (error: unknown) { next(error); }
+});
+
+export const creditMemoRouter = Router();
+creditMemoRouter.use(requireAuthentication);
+creditMemoRouter.get('/', requirePermission(permissions.creditMemosRead), async (request, response, next) => {
+  try {
+    const result = await listCreditMemos(request.auth!.organizationId, creditMemoQuerySchema.parse(request.query));
+    const data = { items: result.data, total: result.meta.total };
+    response.json({ success: true, data, meta: result.meta } satisfies ApiSuccess<typeof data>);
+  } catch (error: unknown) { next(error); }
+});
+
+export const customerRefundRouter = Router();
+customerRefundRouter.use(requireAuthentication);
+customerRefundRouter.get('/', requirePermission(permissions.customerRefundsRead), async (request, response, next) => {
+  try {
+    const result = await listCustomerRefunds(request.auth!.organizationId, customerRefundQuerySchema.parse(request.query));
+    const data = { items: result.data, total: result.meta.total };
+    response.json({ success: true, data, meta: result.meta } satisfies ApiSuccess<typeof data>);
+  } catch (error: unknown) { next(error); }
+});
+customerRefundRouter.post('/', requirePermission(permissions.customerRefundsCreate), async (request, response, next) => {
+  try {
+    const result = await registerCustomerRefund(request.auth!.organizationId, request.auth!.sub, createCustomerRefundSchema.parse(request.body), request.ip);
+    response.status(201).json({ success: true, data: result } satisfies ApiSuccess<typeof result>);
+  } catch (error: unknown) { next(error); }
+});
+creditMemoRouter.post('/', requirePermission(permissions.creditMemosCreate), async (request, response, next) => {
+  try {
+    const result = await registerCreditMemo(request.auth!.organizationId, request.auth!.sub, createCreditMemoSchema.parse(request.body), request.ip);
+    response.status(201).json({ success: true, data: result } satisfies ApiSuccess<typeof result>);
   } catch (error: unknown) { next(error); }
 });
 invoiceRouter.post('/', requirePermission(permissions.invoicesIssue), async (request, response, next) => {

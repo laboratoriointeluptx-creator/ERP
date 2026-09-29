@@ -3,8 +3,8 @@ import type { ApiSuccess } from '../../../shared/http.js';
 import { requireAuthentication } from '../../authentication/middleware/authentication.middleware.js';
 import { requirePermission } from '../../authorization/middleware/authorization.middleware.js';
 import { permissions } from '../../authorization/permissions.js';
-import { getCustomers, registerCustomer } from '../services/customer.service.js';
-import { createCustomerSchema, customerQuerySchema } from '../validators/customer.schemas.js';
+import { getCustomers, modifyCustomer, registerCustomer } from '../services/customer.service.js';
+import { createCustomerSchema, customerQuerySchema, updateCustomerSchema } from '../validators/customer.schemas.js';
 
 export const customerRouter = Router();
 customerRouter.use(requireAuthentication);
@@ -32,4 +32,11 @@ customerRouter.post('/', requirePermission(permissions.customersCreate), async (
   } catch (error: unknown) {
     next(error);
   }
+});
+
+customerRouter.patch('/:id', requirePermission(permissions.customersUpdate), async (request, response, next) => {
+  try {
+    const customer = await modifyCustomer(request.auth!.organizationId, request.auth!.sub, String(request.params.id), updateCustomerSchema.parse(request.body), request.ip);
+    response.json({ success: true, data: customer } satisfies ApiSuccess<typeof customer>);
+  } catch (error: unknown) { next(error); }
 });

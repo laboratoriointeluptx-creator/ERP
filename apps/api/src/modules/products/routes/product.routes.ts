@@ -3,8 +3,8 @@ import type { ApiSuccess } from '../../../shared/http.js';
 import { requireAuthentication } from '../../authentication/middleware/authentication.middleware.js';
 import { requirePermission } from '../../authorization/middleware/authorization.middleware.js';
 import { permissions } from '../../authorization/permissions.js';
-import { getProducts, registerProduct } from '../services/product.service.js';
-import { createProductSchema, productQuerySchema } from '../validators/product.schemas.js';
+import { getProducts, modifyProduct, registerProduct } from '../services/product.service.js';
+import { createProductSchema, productQuerySchema, updateProductSchema } from '../validators/product.schemas.js';
 
 export const productRouter = Router();
 productRouter.use(requireAuthentication);
@@ -32,4 +32,11 @@ productRouter.post('/', requirePermission(permissions.productsCreate), async (re
   } catch (error: unknown) {
     next(error);
   }
+});
+
+productRouter.patch('/:id', requirePermission(permissions.productsUpdate), async (request, response, next) => {
+  try {
+    const product = await modifyProduct(request.auth!.organizationId, request.auth!.sub, String(request.params.id), updateProductSchema.parse(request.body), request.ip);
+    response.json({ success: true, data: product } satisfies ApiSuccess<typeof product>);
+  } catch (error: unknown) { next(error); }
 });

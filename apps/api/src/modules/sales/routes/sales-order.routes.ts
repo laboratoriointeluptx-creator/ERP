@@ -3,11 +3,27 @@ import type { ApiSuccess } from '../../../shared/http.js';
 import { requireAuthentication } from '../../authentication/middleware/authentication.middleware.js';
 import { requirePermission } from '../../authorization/middleware/authorization.middleware.js';
 import { permissions } from '../../authorization/permissions.js';
-import { cancelSalesOrder, confirmSalesOrder, registerSalesOrder } from '../services/sales-order.service.js';
-import { confirmSalesOrderSchema, createSalesOrderSchema, salesOrderParamsSchema } from '../validators/sales-order.schemas.js';
+import { cancelSalesOrder, confirmSalesOrder, listReturnableSalesOrders, listSalesOrders, registerSalesOrder } from '../services/sales-order.service.js';
+import { confirmSalesOrderSchema, createSalesOrderSchema, returnableSalesOrderQuerySchema, salesOrderParamsSchema, salesOrderQuerySchema } from '../validators/sales-order.schemas.js';
 
 export const salesOrderRouter = Router();
 salesOrderRouter.use(requireAuthentication);
+
+salesOrderRouter.get('/returnable', requirePermission(permissions.salesOrdersRead), async (request, response, next) => {
+  try {
+    const query = returnableSalesOrderQuerySchema.parse(request.query);
+    const result = await listReturnableSalesOrders(request.auth!.organizationId, query);
+    response.json({ success: true, data: result, meta: { page: query.page, limit: query.limit, total: result.total } } satisfies ApiSuccess<typeof result>);
+  } catch (error: unknown) { next(error); }
+});
+
+salesOrderRouter.get('/', requirePermission(permissions.salesOrdersRead), async (request, response, next) => {
+  try {
+    const query = salesOrderQuerySchema.parse(request.query);
+    const result = await listSalesOrders(request.auth!.organizationId, query);
+    response.json({ success: true, data: result, meta: { page: query.page, limit: query.limit, total: result.total } } satisfies ApiSuccess<typeof result>);
+  } catch (error: unknown) { next(error); }
+});
 
 salesOrderRouter.post('/:id/cancel', requirePermission(permissions.salesOrdersCancel), async (request, response, next) => {
   try {

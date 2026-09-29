@@ -5,8 +5,11 @@
 - Un pedido solo puede tener una factura, y el número de factura es único por organización.
 - `POST /api/v1/payments` confirma un pago contra una factura abierta. Impide pagos mayores al saldo, conserva la moneda de la factura y actualiza su estado a `PARTIALLY_PAID` o `PAID`.
 - `GET /api/v1/invoices` y `GET /api/v1/payments` ofrecen consulta paginada tenant-scoped; las facturas incluyen el total pagado confirmado y el saldo pendiente.
+- `POST /api/v1/credit-memos` genera una nota de crédito ligada a una devolución de venta y su factura. Valida que los productos y cantidades facturados no se acrediten más de una vez, calcula el importe con precios de la factura y actualiza el saldo por cobrar; `GET /api/v1/credit-memos` lista notas paginadas. La lista de facturas informa pagos, créditos, saldo pendiente y crédito a favor.
+- `POST /api/v1/customer-refunds` devuelve dinero de un pago confirmado y una nota de crédito de la misma factura. Limita el reembolso al crédito disponible, al pago y al importe de la nota; registra auditoría y serializa cambios concurrentes en la factura. `GET /api/v1/customer-refunds` y la lista de pagos exponen los reembolsos y el neto pagado.
+- La pantalla Finanzas permite consultar facturas, emitir notas desde devoluciones de venta aún no acreditadas y registrar reembolsos relacionados. Está habilitada para administradores; falta separar permisos de lectura y operación en la interfaz y añadir paginación/filtros avanzados.
 - `POST /api/v1/supplier-invoices` registra una factura del proveedor vinculada a una orden enviada o recibida. El importe lo captura el usuario y la moneda se hereda de la orden.
 - `GET /api/v1/supplier-invoices` y `GET /api/v1/supplier-payments` permiten consultar cuentas por pagar y movimientos paginados. `POST /api/v1/supplier-payments` registra pagos que no pueden exceder el saldo.
 - El flujo de cuentas por pagar no calcula impuestos ni deriva el importe de la orden: conserva el monto de la factura recibida del proveedor.
 - Factura, pago y auditoría se escriben en transacciones y todas las lecturas/escrituras filtran por organización.
-- Pendiente: cancelaciones/reembolsos de pagos, impuestos configurables, notas de crédito, documentos fiscales, conciliación bancaria y asientos contables automáticos.
+- Pendiente: impuestos configurables, documentos fiscales, conciliación bancaria, vencimientos y asientos contables automáticos. El cálculo de impuestos sigue en cero y no debe usarse como cálculo fiscal.

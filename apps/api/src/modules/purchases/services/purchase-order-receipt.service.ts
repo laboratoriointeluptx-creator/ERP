@@ -116,6 +116,7 @@ export const receivePurchaseOrder = async (
         productId: line.productId,
         type: 'PURCHASE',
         quantity: line.quantity,
+        reason: 'Recepción de orden de compra',
         referenceType: 'PURCHASE_ORDER',
         referenceId: String(order._id),
       })), { session });

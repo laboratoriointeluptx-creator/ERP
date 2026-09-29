@@ -18,6 +18,7 @@ const invoiceSchema = new Schema(
     salesOrderId: { type: Schema.Types.ObjectId, ref: 'SalesOrder' },
     number: { type: String, required: true, trim: true, uppercase: true, maxlength: 40 },
     status: { type: String, required: true, enum: ['DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED'], default: 'DRAFT' },
+    financialRevision: { type: Number, required: true, default: 0 },
     lines: { type: [invoiceLineSchema], required: true, validate: [(lines: unknown[]) => lines.length > 0, 'At least one line is required'] },
     subtotal: { type: String, required: true, match: /^\d+(\.\d{1,4})?$/ },
     taxTotal: { type: String, required: true, match: /^\d+(\.\d{1,4})?$/ },

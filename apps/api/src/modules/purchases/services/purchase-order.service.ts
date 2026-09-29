@@ -1,10 +1,49 @@
 import { HttpError } from '../../../shared/http.js';
+import mongoose from 'mongoose';
 import { isGreaterThan } from '../../../shared/decimal.js';
 import { ProductModel } from '../../products/models/product.model.js';
 import { PurchaseRequestModel } from '../models/purchase-request.model.js';
 import { SupplierModel } from '../../suppliers/models/supplier.model.js';
 import { createPurchaseOrder } from '../repositories/purchase-order.repository.js';
+import { PurchaseOrderModel } from '../models/purchase-order.model.js';
+import { recordAuditEvent } from '../../audit/services/audit.service.js';
 import type { CreatePurchaseOrderInput } from '../validators/purchase-order.schemas.js';
+
+export const listReturnablePurchaseOrders = async (organizationId: string, query: { page: number; limit: number }) => {
+  const filter = { organizationId, status: { $in: ['PARTIALLY_RECEIVED', 'RECEIVED'] } };
+  const [items, total] = await Promise.all([
+    PurchaseOrderModel.find(filter).sort({ updatedAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    PurchaseOrderModel.countDocuments(filter).exec(),
+  ]);
+  return { items, total };
+};
+
+export const listPurchaseOrders = async (organizationId: string, query: { page: number; limit: number; status?: string | undefined }) => {
+  const filter = { organizationId, ...(query.status ? { status: query.status } : {}) };
+  const [items, total] = await Promise.all([
+    PurchaseOrderModel.find(filter).sort({ createdAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    PurchaseOrderModel.countDocuments(filter).exec(),
+  ]);
+  return { items, total };
+};
+
+export const sendPurchaseOrder = async (organizationId: string, userId: string, orderId: string, ip?: string) => {
+  const session = await mongoose.startSession();
+  try {
+    let result: unknown;
+    await session.withTransaction(async () => {
+      const order = await PurchaseOrderModel.findOne({ _id: orderId, organizationId }).session(session).exec();
+      if (!order) throw new HttpError(404, 'PURCHASE_ORDER_NOT_FOUND', 'Purchase order not found');
+      if (order.status !== 'DRAFT') throw new HttpError(409, 'PURCHASE_ORDER_NOT_SENDABLE', 'Only draft purchase orders can be sent');
+      const previousStatus = order.status;
+      order.status = 'SENT';
+      await order.save({ session });
+      await recordAuditEvent({ organizationId, userId, action: 'purchase-order.sent', module: 'purchases', entity: 'PurchaseOrder', entityId: String(order._id), ...(ip ? { ip } : {}), before: { status: previousStatus }, after: { status: order.status } }, session);
+      result = order;
+    });
+    return result;
+  } finally { await session.endSession(); }
+};
 
 export const validateApprovedPurchaseRequest = (
   status: string,

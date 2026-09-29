@@ -3,8 +3,8 @@ import type { ApiSuccess } from '../../../shared/http.js';
 import { requireAuthentication } from '../../authentication/middleware/authentication.middleware.js';
 import { requirePermission } from '../../authorization/middleware/authorization.middleware.js';
 import { permissions } from '../../authorization/permissions.js';
-import { getBranches, registerBranch } from '../services/branch.service.js';
-import { branchQuerySchema, createBranchSchema } from '../validators/branch.schemas.js';
+import { getBranches, modifyBranch, registerBranch } from '../services/branch.service.js';
+import { branchQuerySchema, createBranchSchema, updateBranchSchema } from '../validators/branch.schemas.js';
 
 export const branchRouter = Router();
 branchRouter.use(requireAuthentication);
@@ -28,4 +28,11 @@ branchRouter.post('/', requirePermission(permissions.branchesCreate), async (req
   } catch (error: unknown) {
     next(error);
   }
+});
+
+branchRouter.patch('/:id', requirePermission(permissions.branchesUpdate), async (request, response, next) => {
+  try {
+    const branch = await modifyBranch(request.auth!.organizationId, request.auth!.sub, String(request.params.id), updateBranchSchema.parse(request.body), request.ip);
+    response.json({ success: true, data: branch } satisfies ApiSuccess<typeof branch>);
+  } catch (error: unknown) { next(error); }
 });

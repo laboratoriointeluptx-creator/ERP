@@ -12,6 +12,9 @@ Una orden vinculada a una solicitud requiere que esta pertenezca a la misma orga
 
 ## Recepción de órdenes
 
+- `GET /api/v1/purchase-orders` lista órdenes tenant-scoped con paginación y filtro de estado; `POST /api/v1/purchase-orders` crea una orden en `DRAFT`.
+- `POST /api/v1/purchase-orders/:id/send` valida la transición `DRAFT → SENT` y registra auditoría transaccional. Esta transición habilita la recepción.
+
 `POST /api/v1/purchase-orders/:id/receipts` registra una recepción parcial o total. Requiere autenticación y el permiso `purchase-orders.receive`.
 
 ```json
@@ -32,6 +35,8 @@ En una transacción de MongoDB se actualizan las cantidades recibidas, el estado
 - `SENT`: orden enviada, aún sin recepción.
 - `PARTIALLY_RECEIVED`: recepción incompleta.
 - `RECEIVED`: todas las líneas alcanzaron la cantidad ordenada.
+
+La web permite crear órdenes con varias líneas, marcarlas como enviadas y capturar cantidades de recepción parciales por producto en un almacén activo. Sigue pendiente la cancelación/edición y el manejo explícito de discrepancias.
 
 La facturación del proveedor, cuentas por pagar y asientos contables requieren reglas de negocio y siguen pendientes.
 

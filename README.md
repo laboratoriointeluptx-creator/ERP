@@ -12,6 +12,8 @@ Fases iniciales: workspace TypeScript, API Express versionada, MongoDB/Mongoose,
 
 El proyecto usa un monolito modular preparado para extraer modulos posteriormente. Incluye API Express, dashboard web con React Native Web y una pantalla mobile inicial. Consulta [docs/architecture/initial-analysis.md](docs/architecture/initial-analysis.md) y [docs/architecture/architecture.md](docs/architecture/architecture.md).
 
+Consulta [el roadmap de fases y módulos](docs/roadmap/erp-phases.md) para conocer el estado y el alcance pendiente de cada área.
+
 ## Requisitos
 
 - Node.js 20 LTS o superior.

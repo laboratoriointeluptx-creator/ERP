@@ -10,6 +10,15 @@ import { ShipmentModel } from '../models/shipment.model.js';
 import { createShipment as createShipmentRecord } from '../repositories/shipment.repository.js';
 import type { CreateShipmentInput } from '../validators/shipment.schemas.js';
 
+export const listShipments = async (organizationId: string, query: { page: number; limit: number; status?: string | undefined }) => {
+  const filter = { organizationId, ...(query.status ? { status: query.status } : {}) };
+  const [items, total] = await Promise.all([
+    ShipmentModel.find(filter).sort({ createdAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    ShipmentModel.countDocuments(filter).exec(),
+  ]);
+  return { items, total };
+};
+
 export const calculateShipmentBalance = (
   onHand: string,
   reserved: string,
@@ -104,6 +113,7 @@ export const dispatchShipment = async (organizationId: string, userId: string, s
           productId: line.productId,
           type: 'SALE',
           quantity: line.quantity,
+          reason: 'Salida por despacho de pedido de venta',
           referenceType: 'SALES_ORDER',
           referenceId: String(order._id),
         }], { session });

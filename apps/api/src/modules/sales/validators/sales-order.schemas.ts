@@ -17,6 +17,15 @@ export const createSalesOrderSchema = z.object({
 });
 
 export const salesOrderParamsSchema = z.object({ id: objectId });
+export const returnableSalesOrderQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+}).strict();
+export const salesOrderQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+  status: z.enum(['DRAFT', 'CONFIRMED', 'PREPARING', 'SHIPPED', 'COMPLETED', 'CANCELLED']).optional(),
+}).strict();
 export const confirmSalesOrderSchema = z.object({ warehouseId: objectId }).strict();
 
 export type CreateSalesOrderInput = z.infer<typeof createSalesOrderSchema>;

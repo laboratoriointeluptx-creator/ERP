@@ -7,8 +7,28 @@ import { ProductModel } from '../../products/models/product.model.js';
 import { recordAuditEvent } from '../../audit/services/audit.service.js';
 import { WarehouseModel } from '../../warehouses/models/warehouse.model.js';
 import { SalesOrderModel } from '../models/sales-order.model.js';
+import { ShipmentModel } from '../../logistics/models/shipment.model.js';
 import { createSalesOrder } from '../repositories/sales-order.repository.js';
 import type { ConfirmSalesOrderInput, CreateSalesOrderInput } from '../validators/sales-order.schemas.js';
+
+export const listReturnableSalesOrders = async (organizationId: string, query: { page: number; limit: number }) => {
+  const shippedOrderIds = await ShipmentModel.distinct('salesOrderId', { organizationId, status: { $in: ['SHIPPED', 'IN_TRANSIT', 'DELIVERED'] } }).exec();
+  const filter = { organizationId, _id: { $in: shippedOrderIds }, status: { $in: ['SHIPPED', 'COMPLETED'] } };
+  const [items, total] = await Promise.all([
+    SalesOrderModel.find(filter).sort({ updatedAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    SalesOrderModel.countDocuments(filter).exec(),
+  ]);
+  return { items, total };
+};
+
+export const listSalesOrders = async (organizationId: string, query: { page: number; limit: number; status?: string | undefined }) => {
+  const filter = { organizationId, ...(query.status ? { status: query.status } : {}) };
+  const [items, total] = await Promise.all([
+    SalesOrderModel.find(filter).sort({ createdAt: -1, _id: -1 }).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+    SalesOrderModel.countDocuments(filter).exec(),
+  ]);
+  return { items, total };
+};
 
 export const registerSalesOrder = async (organizationId: string, input: CreateSalesOrderInput) => {
   try {

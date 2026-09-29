@@ -18,6 +18,9 @@ export const leadQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(25),
   stage: z.enum(['NEW', 'CONTACTED', 'QUALIFIED', 'LOST', 'CONVERTED']).optional(),
 });
+export const leadParamsSchema = z.object({ id: objectId });
+export const convertLeadSchema = z.object({ customerId: objectId }).strict();
+export const updateLeadStageSchema = z.object({ stage: z.enum(['NEW', 'CONTACTED', 'QUALIFIED', 'LOST']) }).strict();
 
 export type CreateLeadInput = z.infer<typeof createLeadSchema>;
 export type LeadQuery = z.infer<typeof leadQuerySchema>;

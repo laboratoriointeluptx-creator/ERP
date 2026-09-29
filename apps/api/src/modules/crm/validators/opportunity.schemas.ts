@@ -16,6 +16,8 @@ export const opportunityQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(25),
   stage: z.enum(['PROSPECTING', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST']).optional(),
 });
+export const opportunityParamsSchema = z.object({ id: objectId });
+export const updateOpportunityStageSchema = z.object({ stage: z.enum(['PROSPECTING', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST']) }).strict();
 
 export type CreateOpportunityInput = z.infer<typeof createOpportunitySchema>;
 export type OpportunityQuery = z.infer<typeof opportunityQuerySchema>;

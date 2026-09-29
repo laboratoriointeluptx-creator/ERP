@@ -3,8 +3,8 @@ import type { ApiSuccess } from '../../../shared/http.js';
 import { requireAuthentication } from '../../authentication/middleware/authentication.middleware.js';
 import { requirePermission } from '../../authorization/middleware/authorization.middleware.js';
 import { permissions } from '../../authorization/permissions.js';
-import { getSuppliers, registerSupplier } from '../services/supplier.service.js';
-import { createSupplierSchema, supplierQuerySchema } from '../validators/supplier.schemas.js';
+import { getSuppliers, modifySupplier, registerSupplier } from '../services/supplier.service.js';
+import { createSupplierSchema, supplierQuerySchema, updateSupplierSchema } from '../validators/supplier.schemas.js';
 
 export const supplierRouter = Router();
 supplierRouter.use(requireAuthentication);
@@ -32,4 +32,11 @@ supplierRouter.post('/', requirePermission(permissions.suppliersCreate), async (
   } catch (error: unknown) {
     next(error);
   }
+});
+
+supplierRouter.patch('/:id', requirePermission(permissions.suppliersUpdate), async (request, response, next) => {
+  try {
+    const supplier = await modifySupplier(request.auth!.organizationId, request.auth!.sub, String(request.params.id), updateSupplierSchema.parse(request.body), request.ip);
+    response.json({ success: true, data: supplier } satisfies ApiSuccess<typeof supplier>);
+  } catch (error: unknown) { next(error); }
 });

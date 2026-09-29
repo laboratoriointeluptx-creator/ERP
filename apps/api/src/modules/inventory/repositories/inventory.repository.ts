@@ -8,7 +8,7 @@ import { ProductModel } from '../../products/models/product.model.js';
 import { recordAuditEvent } from '../../audit/services/audit.service.js';
 import type { InventoryMovementQuery, InventoryQuery, MovementInput } from '../validators/inventory.schemas.js';
 
-const outboundTypes = new Set<MovementInput['type']>(['DAMAGE']);
+const isOutbound = (input: MovementInput): boolean => input.type === 'DAMAGE' || (input.type === 'ADJUSTMENT' && input.direction === 'DECREASE');
 
 export const listInventoryBalances = async (organizationId: string, query: InventoryQuery) => {
   const filter = {
@@ -62,10 +62,10 @@ export const applyInventoryMovement = async (
         throw new HttpError(409, 'INVENTORY_BALANCE_INVALID', 'Reserved stock exceeds on-hand stock');
       }
       const availableQuantity = subtractDecimal(currentQuantity, reservedQuantity);
-      if (outboundTypes.has(input.type) && isGreaterThan(input.quantity, availableQuantity)) {
+      if (isOutbound(input) && isGreaterThan(input.quantity, availableQuantity)) {
         throw new HttpError(409, 'INSUFFICIENT_STOCK', 'Insufficient stock');
       }
-      const nextQuantity = outboundTypes.has(input.type)
+      const nextQuantity = isOutbound(input)
         ? subtractDecimal(currentQuantity, input.quantity)
         : addDecimal(currentQuantity, input.quantity);
       const updatedBalance = await InventoryModel.findOneAndUpdate(
@@ -78,7 +78,9 @@ export const applyInventoryMovement = async (
         warehouseId: warehouse._id,
         productId: product._id,
         type: input.type,
+        ...(input.direction ? { direction: input.direction } : {}),
         quantity: input.quantity,
+        reason: input.reason,
         ...(input.referenceType ? { referenceType: input.referenceType } : {}),
         ...(input.referenceId ? { referenceId: input.referenceId } : {}),
       }], { session });
@@ -94,7 +96,9 @@ export const applyInventoryMovement = async (
         before: { quantity: currentQuantity, reservedQuantity },
         after: {
           type: input.type,
+          ...(input.direction ? { direction: input.direction } : {}),
           quantity: input.quantity,
+          reason: input.reason,
           quantityOnHand: nextQuantity,
           reservedQuantity,
           warehouseId: String(warehouse._id),
