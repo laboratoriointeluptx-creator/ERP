@@ -11,6 +11,7 @@
   "dependencies": {
     "@erp-universal/api-client": "0.1.0",
     "@erp-universal/types": "0.1.0",
+    "@erp-universal/design-system": "0.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-native-web": "^0.19.13"
