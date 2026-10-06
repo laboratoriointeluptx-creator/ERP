@@ -8,6 +8,25 @@ export const findUserForLogin = (organizationId: string, email: string): Promise
 export const findActiveUserById = (userId: string, organizationId: string): Promise<User | null> =>
   UserModel.findOne({ _id: userId, organizationId, active: true }).exec();
 
+export const findActiveUserForPasswordRecovery = async (organizationId: string, email: string) => {
+  const user = await UserModel.findOne({ organizationId, email, active: true }).select('_id organizationId email').exec();
+  return user ? { id: user._id.toString(), organizationId: user.organizationId.toString(), email: user.email } : null;
+};
+
+export const updateUserPasswordHash = async (
+  organizationId: string,
+  userId: string,
+  passwordHash: string,
+  session: ClientSession,
+): Promise<boolean> => {
+  const result = await UserModel.updateOne(
+    { _id: userId, organizationId, active: true },
+    { $set: { passwordHash } },
+    { session },
+  ).exec();
+  return result.matchedCount === 1;
+};
+
 export const listOrganizationUsers = async (organizationId: string, query: UserQuery) => {
   const search = query.search?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const filter = {

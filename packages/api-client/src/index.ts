@@ -1,5 +1,6 @@
 import type { ApiFailure, ApiSuccess, AuthSession, CreditMemo, CustomerRefund, DashboardSummary, FinanceInvoice, FinancePayment, InventoryBalance, InventoryCycleCount, InventoryMovement, InventoryPage, InventoryReturn, InventoryTransfer, MasterDataResult, OrganizationSummary, OrganizationUsersResult, PurchaseOrder, ReturnablePurchaseOrder, ReturnableSalesOrder, SalesOrder, Shipment, UserSummary } from '@erp-universal/types';
 
+export type { AuthSession, DashboardSummary, OrganizationSummary };
 export type MasterDataResource = 'customers' | 'suppliers' | 'products' | 'branches' | 'warehouses' | 'categories' | 'units';
 
 export class ApiClientError extends Error {
@@ -42,6 +43,14 @@ export class ApiClient {
 
   public login(input: { organizationId: string; email: string; password: string }): Promise<AuthSession> {
     return this.request<AuthSession>('/api/v1/auth/login', { method: 'POST', body: JSON.stringify(input) });
+  }
+
+  public requestPasswordReset(input: { organizationId: string; email: string }): Promise<{ accepted: true }> {
+    return this.request<{ accepted: true }>('/api/v1/auth/forgot-password', { method: 'POST', body: JSON.stringify(input) });
+  }
+
+  public resetPassword(input: { token: string; newPassword: string }): Promise<{ changed: true }> {
+    return this.request<{ changed: true }>('/api/v1/auth/reset-password', { method: 'POST', body: JSON.stringify(input) });
   }
 
   public getCurrentOrganization(): Promise<OrganizationSummary> {

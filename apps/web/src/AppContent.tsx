@@ -377,7 +377,7 @@ export function AppContent() {
   return (
     <DashboardLayout
       screen="dashboard"
-      setScreen={(s: string) => setScreen(s)}
+      setScreen={setScreen}
       organization={organization}
       summary={summary}
       api={api}

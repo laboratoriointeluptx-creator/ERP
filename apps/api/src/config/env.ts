@@ -15,6 +15,15 @@ const environmentSchema = z.object({
   JWT_SECRET: z.preprocess((value) => (value === '' ? undefined : value), z.string().min(32).optional()),
   JWT_REFRESH_SECRET: z.preprocess((value) => (value === '' ? undefined : value), z.string().min(32).optional()),
   SEED_ADMIN_PASSWORD: z.preprocess((value) => (value === '' ? undefined : value), z.string().min(12).optional()),
+  RESEND_API_KEY: z.preprocess((value) => (value === '' ? undefined : value), z.string().trim().min(1).optional()),
+  FRONTEND_BASE_URL: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.string().url().refine((value) => {
+      const url = new URL(value);
+      return !url.search && !url.hash;
+    }).optional(),
+  ),
+  EMAIL_FROM: z.preprocess((value) => (value === '' ? undefined : value), z.string().trim().min(3).max(320).optional()),
 });
 
 export const env = environmentSchema.parse(process.env);

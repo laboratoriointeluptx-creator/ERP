@@ -8,6 +8,7 @@ export const createProductSchema = z.object({
   description: z.string().trim().max(2000).optional(),
   unit: z.string().trim().min(1).max(16).transform((value) => value.toUpperCase()).default('PZA'),
   salePrice: z.string().regex(moneyPattern, 'salePrice must be a decimal string'),
+  standardCost: z.string().regex(moneyPattern, 'standardCost must be a decimal string').optional(),
 }).strict();
 
 export const productQuerySchema = z.object({

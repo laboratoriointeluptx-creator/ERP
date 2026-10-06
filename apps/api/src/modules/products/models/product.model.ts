@@ -8,6 +8,7 @@ const productSchema = new Schema(
     description: { type: String, trim: true, maxlength: 2000 },
     unit: { type: String, required: true, trim: true, uppercase: true, maxlength: 16, default: 'PZA' },
     salePrice: { type: String, required: true, match: /^\d+(\.\d{1,4})?$/ },
+    standardCost: { type: String, default: '0', match: /^\d+(\.\d{1,4})?$/ },
     active: { type: Boolean, required: true, default: true },
   },
   { timestamps: true, collection: 'products' },
