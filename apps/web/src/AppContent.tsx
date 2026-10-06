@@ -2,7 +2,7 @@
  * SYNTARA ERP - Main Application Content
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { ApiClient, type AuthSession, type DashboardSummary, type OrganizationSummary } from '@erp-universal/api-client';
 import { useTheme, Box, Text as DSText, Button, Input, Card, CardHeader, CardContent, KPICard, Badge } from '@erp-universal/design-system';
@@ -42,13 +42,19 @@ export function AppContent() {
   const [notice, setNotice] = useState('');
   const [session, setSession] = useState<AuthSession | null>(null);
   const [canManageUsers, setCanManageUsers] = useState(false);
-  const [accessToken, setAccessToken] = useState<string>('');
+  // El token vive en un ref (y no en estado): el estado se actualiza en el
+  // siguiente render, pero loadDashboard() se ejecuta dentro del mismo signIn
+  // y necesitaba leer el token recién obtenido, no el anterior.
+  const accessTokenRef = useRef<string>('');
   const [organization, setOrganization] = useState<OrganizationSummary | null>(null);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const api = new ApiClient({ baseUrl: API_BASE_URL, getAccessToken: () => accessToken });
+  const api = useMemo(
+    () => new ApiClient({ baseUrl: API_BASE_URL, getAccessToken: () => accessTokenRef.current }),
+    [],
+  );
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -85,12 +91,12 @@ export function AppContent() {
       const result = await unauthenticatedApi.login({ organizationId: organizationId.trim(), email: email.trim(), password });
       setSession(result);
       setCanManageUsers(tokenHasAdminRole(result.accessToken));
-      setAccessToken(result.accessToken);
+      accessTokenRef.current = result.accessToken;
       setPassword('');
       await loadDashboard();
     } catch (cause: unknown) {
       setSession(null);
-      setAccessToken('');
+      accessTokenRef.current = '';
       setError(cause instanceof Error ? cause.message : 'No se pudo conectar con el ERP');
     } finally {
       setLoading(false);
@@ -145,11 +151,11 @@ export function AppContent() {
         try {
           if (!session) throw cause;
           const refreshed = await api.refresh(session.refreshToken);
-          setAccessToken(refreshed.accessToken);
+          accessTokenRef.current = refreshed.accessToken;
           await loadDashboard();
         } catch {
           setSession(null);
-          setAccessToken('');
+          accessTokenRef.current = '';
           setOrganization(null);
           setSummary(null);
           setError('La sesión expiró. Inicia sesión de nuevo.');
@@ -166,7 +172,7 @@ export function AppContent() {
     if (session) await api.logout(session.refreshToken).catch(() => undefined);
     setSession(null);
     setCanManageUsers(false);
-    setAccessToken('');
+    accessTokenRef.current = '';
     setOrganization(null);
     setSummary(null);
     setScreen('login');
