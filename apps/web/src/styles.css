@@ -1,5 +1,5 @@
-html, body, #root { margin: 0; min-height: 100%; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
-body { min-width: 320px; }
+html, body, #root { margin: 0; height: 100%; min-height: 100%; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+body { min-width: 320px; background: #020B17; color-scheme: dark; }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }

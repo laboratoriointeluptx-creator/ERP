@@ -49,12 +49,22 @@ export function AppContent() {
   const [error, setError] = useState('');
 
   const api = new ApiClient({ baseUrl: API_BASE_URL, getAccessToken: () => accessToken });
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (resetToken && typeof window !== 'undefined' && window.location.search) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [resetToken]);
+
+  // La pantalla de carga es solo cosmética (no hay sesión ni datos que restaurar):
+  // se avanza al login para no quedarse en el splash de forma indefinida.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setScreen((current) => (current === 'splash' ? 'login' : current));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const loadDashboard = useCallback(async () => {
     const [currentOrganization, dashboard] = await Promise.all([
@@ -172,7 +182,6 @@ export function AppContent() {
 
   // Splash screen
   if (screen === 'splash') {
-    const { theme } = useTheme();
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background.primary }]}>
         <View style={styles.splashContainer}>
@@ -193,7 +202,6 @@ export function AppContent() {
   }
 
   if (recoveryMode === 'forgot-password') {
-    const { theme } = useTheme();
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background.primary }]}>
         <View style={styles.loginShell}>
@@ -236,7 +244,6 @@ export function AppContent() {
   }
 
   if (recoveryMode === 'reset-password') {
-    const { theme } = useTheme();
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background.primary }]}>
         <View style={styles.loginShell}>
@@ -267,7 +274,6 @@ export function AppContent() {
 
   // Login screen
   if (!session) {
-    const { theme } = useTheme();
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background.primary }]}>
         <View style={styles.loginShell}>
@@ -343,7 +349,6 @@ export function AppContent() {
   }
 
   if (loading && !summary) {
-    const { theme } = useTheme();
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background.primary }]}>
         <View style={styles.centerState}>
@@ -355,7 +360,6 @@ export function AppContent() {
   }
 
   if (!summary || !organization) {
-    const { theme } = useTheme();
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background.primary }]}>
         <View style={styles.centerState}>
