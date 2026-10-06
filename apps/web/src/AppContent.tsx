@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { ApiClient, type AuthSession, type DashboardSummary, type OrganizationSummary } from '@erp-universal/api-client';
+import { ApiClient, ApiClientError, type AuthSession, type DashboardSummary, type OrganizationSummary } from '@erp-universal/api-client';
 import { useTheme, Box, Text as DSText, Button, Input, Card, CardHeader, CardContent, KPICard, Badge } from '@erp-universal/design-system';
 import { DashboardLayout } from './components/DashboardLayout';
 
@@ -25,6 +25,29 @@ const tokenHasAdminRole = (token: string): boolean => {
   } catch {
     return false;
   }
+};
+
+interface ValidationIssue {
+  path: (string | number)[];
+  message: string;
+}
+
+const isValidationIssue = (value: unknown): value is ValidationIssue => {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as { path?: unknown; message?: unknown };
+  return Array.isArray(candidate.path) && typeof candidate.message === 'string';
+};
+
+/** Devuelve el mensaje del API y, si fue un error de validación (400), indica qué campo falló. */
+const describeApiError = (cause: unknown, fallback: string): string => {
+  if (cause instanceof ApiClientError && cause.code === 'VALIDATION_ERROR') {
+    const issues = cause.details?.issues;
+    if (Array.isArray(issues)) {
+      const parts = issues.filter(isValidationIssue).map((issue) => `${issue.path.join('.') || 'body'}: ${issue.message}`);
+      if (parts.length > 0) return `Datos no válidos — ${parts.join(' · ')}`;
+    }
+  }
+  return cause instanceof Error ? cause.message : fallback;
 };
 
 export function AppContent() {
@@ -97,7 +120,7 @@ export function AppContent() {
     } catch (cause: unknown) {
       setSession(null);
       accessTokenRef.current = '';
-      setError(cause instanceof Error ? cause.message : 'No se pudo conectar con el ERP');
+      setError(describeApiError(cause, 'No se pudo conectar con el ERP'));
     } finally {
       setLoading(false);
     }
@@ -112,7 +135,7 @@ export function AppContent() {
       await unauthenticatedApi.requestPasswordReset({ organizationId: organizationId.trim(), email: email.trim() });
       setRecoverySubmitted(true);
     } catch (cause: unknown) {
-      setError(cause instanceof Error ? cause.message : 'No se pudo procesar la solicitud.');
+      setError(describeApiError(cause, 'No se pudo procesar la solicitud.'));
     } finally {
       setLoading(false);
     }
@@ -136,7 +159,7 @@ export function AppContent() {
       setScreen('login');
       setNotice('Contraseña actualizada. Ya puedes iniciar sesión.');
     } catch (cause: unknown) {
-      setError(cause instanceof Error ? cause.message : 'El enlace de recuperación no es válido o expiró.');
+      setError(describeApiError(cause, 'El enlace de recuperación no es válido o expiró.'));
     } finally {
       setLoading(false);
     }
@@ -161,7 +184,7 @@ export function AppContent() {
           setError('La sesión expiró. Inicia sesión de nuevo.');
         }
       } else {
-        setError(cause instanceof Error ? cause.message : 'No se pudieron actualizar los datos.');
+        setError(describeApiError(cause, 'No se pudieron actualizar los datos.'));
       }
     } finally {
       setLoading(false);

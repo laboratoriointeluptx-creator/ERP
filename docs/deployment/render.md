@@ -16,6 +16,6 @@ Una vez creado el servicio de API, abre **Connect > Outbound** en Render y agreg
 
 ## Acceso
 
-La web usa el dominio `onrender.com` de su servicio. Para entrar, usa el ID de la organización `LAB-DEMO`, `admin@laboratorio.demo` y la contraseña que configuraste con `SEED_ADMIN_PASSWORD` al crear los datos demo. No se ejecuta el seed en Render; se conserva la base existente de Atlas.
+La web usa el dominio `onrender.com` de su servicio. Para entrar, usa el ID de la organización `LAB-DEMO` (el API acepta tanto ese código como el ObjectId de MongoDB de la organización), `admin@laboratorio.demo` y la contraseña que configuraste con `SEED_ADMIN_PASSWORD` al crear los datos demo. No se ejecuta el seed en Render; se conserva la base existente de Atlas.
 
 Los planes gratuitos de Render son para evaluación y pueden suspender servicios inactivos; no se recomiendan para producción. Consulta [los límites actuales del plan gratuito](https://render.com/docs/free) antes de usarlo con operaciones reales.

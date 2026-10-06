@@ -3,6 +3,7 @@ import { SessionModel } from '../models/session.model.js';
 import { LoginAttemptModel } from '../models/login-attempt.model.js';
 import { HttpError } from '../../../shared/http.js';
 import { findActiveUserById, findUserForLogin } from '../../users/repositories/user.repository.js';
+import { findOrganizationIdByReference } from '../../organizations/repositories/organization.repository.js';
 import { verifyPassword } from './password.service.js';
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from './token.service.js';
 import type { LoginInput } from '../validators/auth.schemas.js';
@@ -47,12 +48,18 @@ const recordLoginAttempt = async (key: string): Promise<number> => {
 };
 
 export const login = async (input: LoginInput): Promise<{ accessToken: string; refreshToken: string }> => {
-  const attemptKey = loginAttemptKey(input.organizationId, input.email);
+  // El cliente puede enviar el ObjectId o el código de la organización
+  // (por ejemplo `LAB-DEMO`); se resuelve al ObjectId real antes de continuar.
+  const organizationId = await findOrganizationIdByReference(input.organizationId);
+  const attemptKey = loginAttemptKey(organizationId ?? input.organizationId, input.email);
   if (await recordLoginAttempt(attemptKey) > loginAttemptLimit) {
     throw new HttpError(429, 'LOGIN_RATE_LIMITED', 'Too many login attempts. Try again later.');
   }
+  if (!organizationId) {
+    throw new HttpError(401, 'INVALID_CREDENTIALS', 'Invalid credentials');
+  }
 
-  const user = await findUserForLogin(input.organizationId, input.email);
+  const user = await findUserForLogin(organizationId, input.email);
   const validPassword = user ? await verifyPassword(input.password, user.passwordHash) : false;
 
   if (!user || !validPassword) {

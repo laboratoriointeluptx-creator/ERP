@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { login, logout, refresh } from '../services/authentication.service.js';
+import { findOrganizationIdByReference } from '../../organizations/repositories/organization.repository.js';
 import { passwordRecoveryService } from '../password-recovery.module.js';
 import { loginSchema } from '../validators/auth.schemas.js';
 import { forgotPasswordSchema, resetPasswordSchema } from '../validators/password-recovery.schemas.js';
@@ -15,7 +16,14 @@ export const createAuthenticationRouter = (
   router.post('/forgot-password', async (request, response, next) => {
     try {
       const input = forgotPasswordSchema.parse(request.body);
-      await passwordRecovery.requestPasswordReset(input.organizationId, input.email, request.ip);
+      // Igual que en el login: se acepta el ObjectId o el código de la organización.
+      // Si la referencia no corresponde a ninguna organización no se consulta la
+      // colección de usuarios (evitaría un cast inválido) y se responde igual,
+      // sin revelar si la organización existe.
+      const organizationId = await findOrganizationIdByReference(input.organizationId);
+      if (organizationId) {
+        await passwordRecovery.requestPasswordReset(organizationId, input.email, request.ip);
+      }
       response.status(202).json({
         success: true,
         data: { accepted: true },

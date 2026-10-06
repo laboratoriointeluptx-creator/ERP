@@ -6,12 +6,15 @@ export type MasterDataResource = 'customers' | 'suppliers' | 'products' | 'branc
 export class ApiClientError extends Error {
   public readonly code: string;
   public readonly status: number;
+  /** Solo presente en errores 400 de validación: contiene `issues` de Zod. */
+  public readonly details: Record<string, unknown> | undefined;
 
   public constructor(status: number, failure: ApiFailure) {
     super(failure.error.message);
     this.name = 'ApiClientError';
     this.status = status;
     this.code = failure.error.code;
+    this.details = failure.error.details;
   }
 }
 

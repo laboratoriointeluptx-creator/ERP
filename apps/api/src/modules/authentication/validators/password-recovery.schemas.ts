@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const forgotPasswordSchema = z.object({
-  organizationId: z.string().regex(/^[a-f\d]{24}$/i),
+  organizationId: z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9][A-Za-z0-9 ._\-]{0,31}$/, 'Invalid organization id or code'),
   email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
 }).strict();
 
