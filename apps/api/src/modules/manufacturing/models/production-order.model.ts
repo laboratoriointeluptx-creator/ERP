@@ -18,4 +18,5 @@ productionOrderSchema.index({ organizationId: 1, number: 1 }, { unique: true });
 productionOrderSchema.index({ organizationId: 1, status: 1, createdAt: -1 });
 
 export type ProductionOrder = InferSchemaType<typeof productionOrderSchema>;
-export const ProductionOrderModel = model<ProductionOrder>('ProductionOrder', productionOrderSchema);
+// Nombre de registro único: el módulo production-orders también define 'ProductionOrder'.
+export const ProductionOrderModel = model<ProductionOrder>('ManufacturingProductionOrder', productionOrderSchema);

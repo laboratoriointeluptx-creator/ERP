@@ -17,4 +17,5 @@ const workflowExecutionSchema = new Schema(
 workflowExecutionSchema.index({ organizationId: 1, status: 1, updatedAt: -1 });
 
 export type WorkflowExecution = InferSchemaType<typeof workflowExecutionSchema>;
-export const WorkflowExecutionModel = model<WorkflowExecution>('WorkflowExecution', workflowExecutionSchema);
+// Nombre de registro único: el módulo workflow-executions también define 'WorkflowExecution'.
+export const WorkflowExecutionModel = model<WorkflowExecution>('AutomationWorkflowExecution', workflowExecutionSchema);

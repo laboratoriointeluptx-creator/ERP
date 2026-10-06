@@ -16,4 +16,6 @@ accountSchema.index({ organizationId: 1, code: 1 }, { unique: true });
 accountSchema.index({ organizationId: 1, type: 1, active: 1 });
 
 export type Account = InferSchemaType<typeof accountSchema>;
-export const AccountModel = model<Account>('Account', accountSchema);
+// Nombre de registro único: el módulo chart-of-accounts también define 'Account'
+// (colección propia 'chart_of_accounts'); duplicarlo lanza OverwriteModelError al arrancar.
+export const AccountModel = model<Account>('AccountingAccount', accountSchema);

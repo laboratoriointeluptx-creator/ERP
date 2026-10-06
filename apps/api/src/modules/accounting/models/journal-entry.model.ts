@@ -29,4 +29,5 @@ journalEntrySchema.index({ organizationId: 1, number: 1 }, { unique: true });
 journalEntrySchema.index({ organizationId: 1, date: -1, status: 1 });
 
 export type JournalEntry = InferSchemaType<typeof journalEntrySchema>;
-export const JournalEntryModel = model<JournalEntry>('JournalEntry', journalEntrySchema);
+// Nombre de registro único: el módulo journal-entries también define 'JournalEntry'.
+export const JournalEntryModel = model<JournalEntry>('AccountingJournalEntry', journalEntrySchema);
