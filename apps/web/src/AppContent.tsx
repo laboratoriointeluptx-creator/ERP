@@ -124,7 +124,7 @@ export function AppContent() {
     } finally {
       setLoading(false);
     }
-  }, [api, email, organizationId, loadDashboard]);
+  }, [api, email, organizationId, loadDashboard, password]);
 
   const requestPasswordReset = useCallback(async () => {
     setLoading(true);
@@ -170,7 +170,7 @@ export function AppContent() {
     try {
       await loadDashboard();
     } catch (cause: unknown) {
-      if (cause instanceof Error && (cause as any).status === 401) {
+      if (cause instanceof ApiClientError && cause.status === 401) {
         try {
           if (!session) throw cause;
           const refreshed = await api.refresh(session.refreshToken);
